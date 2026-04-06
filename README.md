@@ -67,9 +67,9 @@ Facebook Graph / OAuth (gerçek paylaşım için):
 
 ## Veritabanı
 
-- Geliştirme: **SQLite** (`prisma/schema.prisma`)
-- SQLite ile Prisma şemasında enum yerine **string** alanlar kullanılmıştır; uygulama tipleri `types/domain.ts` içindedir.
-- PostgreSQL’e geçiş: `datasource` içinde `provider = "postgresql"` ve `DATABASE_URL` güncelleyin; ardından `npx prisma migrate dev` ile migration oluşturun. İsterseniz PostgreSQL tarafında bu alanları native enum’a çevirebilirsiniz.
+- **PostgreSQL** (`prisma/schema.prisma`). `DATABASE_URL` Neon, Supabase veya Vercel Postgres connection string’i olmalı (`?sslmode=require` genelde gerekir).
+- Şemada enum yerine **string** alanlar kullanılmıştır; uygulama tipleri `types/domain.ts` içindedir.
+- İlk kurulum: `.env` içinde `DATABASE_URL` ayarlayın, ardından `npx prisma db push` ve `npm run db:seed`.
 
 ## Sorun giderme
 
