@@ -16,7 +16,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
-    "env:secrets": "node scripts/generate-secrets.js"
+    "env:secrets": "node scripts/generate-secrets.js",
+    "env:local": "node scripts/write-local-env.js"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
