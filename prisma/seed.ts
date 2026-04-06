@@ -16,12 +16,21 @@ async function main() {
 
   const user = await prisma.user.upsert({
     where: { email: "demo@paylasim.app" },
-    update: {},
+    update: {
+      passwordHash,
+      name: "Demo Yönetici",
+      role: "ADMIN",
+      isActive: true,
+      mustChangePassword: false,
+    },
     create: {
       email: "demo@paylasim.app",
       passwordHash,
-      name: "Demo Kullanıcı",
+      name: "Demo Yönetici",
       timezone: "Europe/Istanbul",
+      role: "ADMIN",
+      isActive: true,
+      mustChangePassword: false,
     },
   });
 

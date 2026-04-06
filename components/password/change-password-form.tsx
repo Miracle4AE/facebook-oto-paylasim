@@ -1,52 +1,40 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { preLoginCheck } from "@/actions/auth-login";
-import { loginSchema } from "@/lib/validations";
+import { changePasswordAction } from "@/actions/password-change";
+import { changePasswordSchema } from "@/lib/validations";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 
-type FormValues = z.infer<typeof loginSchema>;
+type FormValues = z.infer<typeof changePasswordSchema>;
 
-export function LoginForm() {
+export function ChangePasswordForm() {
   const router = useRouter();
+  const { update } = useSession();
   const [loading, setLoading] = useState(false);
   const form = useForm<FormValues>({
-    resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    resolver: zodResolver(changePasswordSchema),
+    defaultValues: { currentPassword: "", newPassword: "", confirmPassword: "" },
   });
 
   async function onSubmit(values: FormValues) {
     setLoading(true);
-    const pre = await preLoginCheck(values);
-    if (!pre.ok) {
-      setLoading(false);
-      if (pre.reason === "inactive") {
-        toast.error("Hesabınız pasif durumda. Yöneticiyle iletişime geçin.");
-      } else {
-        toast.error("E-posta veya şifre hatalı.");
-      }
-      return;
-    }
-    const res = await signIn("credentials", {
-      email: values.email,
-      password: values.password,
-      redirect: false,
-    });
+    const res = await changePasswordAction(values);
     setLoading(false);
-    if (res?.error) {
-      toast.error("Oturum oluşturulamadı. Tekrar deneyin.");
+    if (!res.ok) {
+      toast.error(res.error);
       return;
     }
-    toast.success("Hoş geldiniz");
+    await update({ mustChangePassword: false });
+    toast.success("Şifreniz güncellendi");
     router.push("/dashboard");
     router.refresh();
   }
@@ -54,31 +42,18 @@ export function LoginForm() {
   return (
     <Card className="border-border/70 shadow-panel">
       <CardHeader>
-        <CardTitle>Giriş yap</CardTitle>
-        <CardDescription>E-posta ve şifrenizle panele erişin.</CardDescription>
+        <CardTitle>Yeni şifre</CardTitle>
+        <CardDescription>Mevcut geçici şifrenizi ve belirleyeceğiniz kalıcı şifreyi girin.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="email"
+              name="currentPassword"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>E-posta</FormLabel>
-                  <FormControl>
-                    <Input autoComplete="email" type="email" placeholder="ornek@firma.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Şifre</FormLabel>
+                  <FormLabel>Mevcut şifre</FormLabel>
                   <FormControl>
                     <Input autoComplete="current-password" type="password" {...field} />
                   </FormControl>
@@ -86,8 +61,34 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="newPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Yeni şifre</FormLabel>
+                  <FormControl>
+                    <Input autoComplete="new-password" type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Yeni şifre (tekrar)</FormLabel>
+                  <FormControl>
+                    <Input autoComplete="new-password" type="password" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
             <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Giriş yapılıyor..." : "Giriş yap"}
+              {loading ? "Kaydediliyor..." : "Şifreyi kaydet"}
             </Button>
           </form>
         </Form>

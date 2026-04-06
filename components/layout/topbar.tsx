@@ -1,7 +1,9 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { useMemo } from "react";
 import { Menu } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +14,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { mainNav } from "@/components/layout/nav";
+import { adminNavItem, mainNav } from "@/components/layout/nav";
 import { useUiStore } from "@/store/ui-store";
 import { cn } from "@/lib/utils";
+import { UserRole } from "@/types/domain";
+
+type NavLink = { href: string; label: string; icon: LucideIcon };
 
 type Props = {
   user: { name?: string | null; email?: string | null };
@@ -22,6 +27,14 @@ type Props = {
 
 export function Topbar({ user }: Props) {
   const { sidebarOpen, setSidebarOpen } = useUiStore();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === UserRole.ADMIN;
+
+  const mobileLinks: NavLink[] = useMemo(() => {
+    const base: NavLink[] = [...mainNav];
+    if (isAdmin) base.push(adminNavItem);
+    return base;
+  }, [isAdmin]);
 
   return (
     <>
@@ -87,7 +100,7 @@ export function Topbar({ user }: Props) {
           <div className="mt-1 text-lg font-semibold">Paylaşım Paneli</div>
         </div>
         <nav className="space-y-1">
-          {mainNav.map((item) => {
+          {mobileLinks.map((item) => {
             const Icon = item.icon;
             return (
               <Link

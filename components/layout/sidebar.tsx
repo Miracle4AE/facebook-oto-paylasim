@@ -1,12 +1,28 @@
 "use client";
 
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { mainNav } from "@/components/layout/nav";
+import { adminNavItem, mainNav } from "@/components/layout/nav";
+import { UserRole } from "@/types/domain";
+
+type NavLink = { href: string; label: string; icon: LucideIcon };
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === UserRole.ADMIN;
+
+  const links: NavLink[] = useMemo(() => {
+    const base: NavLink[] = [...mainNav];
+    if (isAdmin) {
+      base.push(adminNavItem);
+    }
+    return base;
+  }, [isAdmin]);
 
   return (
     <aside className="hidden w-72 shrink-0 border-r border-border/60 bg-gradient-to-b from-card/80 to-background/40 p-4 lg:block">
@@ -15,7 +31,7 @@ export function Sidebar() {
         <div className="mt-1 text-lg font-semibold">Paylaşım Paneli</div>
       </div>
       <nav className="space-y-1">
-        {mainNav.map((item) => {
+        {links.map((item) => {
           const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
           const Icon = item.icon;
           return (

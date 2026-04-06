@@ -9,6 +9,38 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
 });
 
+export const adminCreateUserSchema = z.object({
+  name: z.string().min(1, "Ad soyad gerekli").max(120),
+  email: z.string().email("Geçerli e-posta girin"),
+  temporaryPassword: z.string().min(8, "Geçici şifre en az 8 karakter olmalı"),
+  isActive: z.boolean(),
+});
+
+export const adminUpdateUserSchema = z
+  .object({
+    userId: z.string().min(1),
+    name: z.string().min(1).max(120),
+    email: z.string().email("Geçerli e-posta girin"),
+    isActive: z.boolean(),
+    role: z.enum(["ADMIN", "USER"]),
+    newTemporaryPassword: z.string(),
+  })
+  .refine((d) => d.newTemporaryPassword === "" || d.newTemporaryPassword.length >= 8, {
+    message: "Geçici şifre en az 8 karakter olmalı",
+    path: ["newTemporaryPassword"],
+  });
+
+export const changePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, "Mevcut şifre gerekli"),
+    newPassword: z.string().min(8, "Yeni şifre en az 8 karakter olmalı"),
+    confirmPassword: z.string().min(1, "Onay gerekli"),
+  })
+  .refine((d) => d.newPassword === d.confirmPassword, {
+    message: "Yeni şifreler eşleşmiyor",
+    path: ["confirmPassword"],
+  });
+
 export const targetChannelSchema = z.object({
   name: z.string().min(1, "İsim gerekli"),
   url: z.string().url("Geçerli bir URL girin"),

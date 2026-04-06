@@ -1,7 +1,15 @@
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
+import { authenticateUser } from "@/services/auth/credentials-auth.service";
+
+type AuthorizeUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+  role: string;
+  mustChangePassword: boolean;
+};
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
@@ -15,29 +23,38 @@ export const authOptions: NextAuthOptions = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials.password) return null;
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email.trim().toLowerCase() },
-        });
-        if (!user) return null;
-        const ok = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!ok) return null;
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          image: user.image,
+        const result = await authenticateUser(credentials.email, credentials.password);
+        if (!result.ok) return null;
+        const u: AuthorizeUser = {
+          id: result.user.id,
+          email: result.user.email,
+          name: result.user.name,
+          image: result.user.image,
+          role: result.user.role,
+          mustChangePassword: result.user.mustChangePassword,
         };
+        return u;
       },
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger, session }) {
       if (user) {
-        token.id = user.id;
-        token.email = user.email;
-        token.name = user.name;
-        token.picture = user.image;
+        const u = user as AuthorizeUser;
+        token.id = u.id;
+        token.email = u.email;
+        token.name = u.name;
+        token.picture = u.image;
+        token.role = u.role;
+        token.mustChangePassword = u.mustChangePassword;
       }
+      if (trigger === "update" && session) {
+        const s = session as { mustChangePassword?: boolean };
+        if (typeof s.mustChangePassword === "boolean") {
+          token.mustChangePassword = s.mustChangePassword;
+        }
+      }
+      if (!token.role) token.role = "USER";
       return token;
     },
     async session({ session, token }) {
@@ -46,6 +63,8 @@ export const authOptions: NextAuthOptions = {
         session.user.email = token.email as string;
         session.user.name = token.name as string | null;
         session.user.image = (token.picture as string | null) ?? null;
+        session.user.role = (token.role as string) ?? "USER";
+        session.user.mustChangePassword = Boolean(token.mustChangePassword);
       }
       return session;
     },

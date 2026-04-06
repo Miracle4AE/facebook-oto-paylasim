@@ -15,6 +15,11 @@ model User {
   image         String?
   timezone      String   @default("Europe/Istanbul")
   emailVerified DateTime?
+  /// ADMIN | USER — yönetim paneli erişimi
+  role          String   @default("USER")
+  isActive      Boolean  @default(true)
+  /// İlk girişte geçici şifre sonrası zorunlu şifre değişimi
+  mustChangePassword Boolean @default(false)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -24,6 +29,9 @@ model User {
   contentPosts     ContentPost[]
   scheduleSlots    ScheduleSlot[]
   appSetting       AppSetting?
+
+  @@index([role])
+  @@index([isActive])
 }
 
 model FacebookAccount {

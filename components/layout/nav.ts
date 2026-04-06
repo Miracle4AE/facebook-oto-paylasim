@@ -6,6 +6,7 @@ import {
   Settings,
   Share2,
   Target,
+  Users,
 } from "lucide-react";
 
 export const mainNav = [
@@ -17,3 +18,10 @@ export const mainNav = [
   { href: "/gecmis", label: "Geçmiş", icon: History },
   { href: "/ayarlar", label: "Ayarlar", icon: Settings },
 ] as const;
+
+/** Yalnızca ADMIN rolüne gösterilir */
+export const adminNavItem = {
+  href: "/admin/kullanicilar",
+  label: "Kullanıcılar",
+  icon: Users,
+} as const;
