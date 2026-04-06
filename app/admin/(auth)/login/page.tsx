@@ -6,7 +6,12 @@ import { LoginForm } from "@/components/login/login-form";
 import { UserRole } from "@/types/domain";
 
 export default async function AdminLoginPage() {
-  const session = await getServerSession(authOptions);
+  let session = null;
+  try {
+    session = await getServerSession(authOptions);
+  } catch (e) {
+    console.error("[admin/login] getServerSession", e);
+  }
   if (session?.user?.role === UserRole.ADMIN) {
     redirect("/admin");
   }

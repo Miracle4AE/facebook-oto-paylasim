@@ -5,7 +5,12 @@ import { authOptions } from "@/lib/auth-options";
 import { LoginForm } from "@/components/login/login-form";
 
 export default async function LoginPage() {
-  const session = await getServerSession(authOptions);
+  let session = null;
+  try {
+    session = await getServerSession(authOptions);
+  } catch (e) {
+    console.error("[login] getServerSession", e);
+  }
   if (session) redirect("/dashboard");
 
   return (

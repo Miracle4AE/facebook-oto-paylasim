@@ -24,18 +24,23 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Şifre", type: "password" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials.password) return null;
-        const result = await authenticateUser(credentials.email, credentials.password);
-        if (!result.ok) return null;
-        const u: AuthorizeUser = {
-          id: result.user.id,
-          email: result.user.email,
-          name: result.user.name,
-          image: result.user.image,
-          role: result.user.role,
-          mustChangePassword: result.user.mustChangePassword,
-        };
-        return u;
+        try {
+          if (!credentials?.email || !credentials.password) return null;
+          const result = await authenticateUser(credentials.email, credentials.password);
+          if (!result.ok) return null;
+          const u: AuthorizeUser = {
+            id: result.user.id,
+            email: result.user.email,
+            name: result.user.name,
+            image: result.user.image,
+            role: result.user.role,
+            mustChangePassword: result.user.mustChangePassword,
+          };
+          return u;
+        } catch (e) {
+          console.error("[next-auth authorize]", e);
+          return null;
+        }
       },
     }),
   ],
