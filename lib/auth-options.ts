@@ -1,5 +1,7 @@
 import type { NextAuthOptions } from "next-auth";
+import type { Prisma } from "@prisma/client";
 import CredentialsProvider from "next-auth/providers/credentials";
+import { prisma } from "@/lib/prisma";
 import { authenticateUser } from "@/services/auth/credentials-auth.service";
 
 type AuthorizeUser = {
@@ -37,6 +39,19 @@ export const authOptions: NextAuthOptions = {
       },
     }),
   ],
+  events: {
+    async signIn({ user }) {
+      if (!user?.id) return;
+      try {
+        await prisma.user.update({
+          where: { id: user.id as string },
+          data: { lastLoginAt: new Date() } as Prisma.UserUpdateInput,
+        });
+      } catch {
+        /* yut */
+      }
+    },
+  },
   callbacks: {
     async jwt({ token, user, trigger, session }) {
       if (user) {

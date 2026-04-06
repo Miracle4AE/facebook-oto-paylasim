@@ -20,6 +20,10 @@ model User {
   isActive      Boolean  @default(true)
   /// İlk girişte geçici şifre sonrası zorunlu şifre değişimi
   mustChangePassword Boolean @default(false)
+  lastLoginAt   DateTime?
+  passwordChangedAt DateTime?
+  archivedAt    DateTime?
+  adminNote     String?  @db.Text
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -29,9 +33,102 @@ model User {
   contentPosts     ContentPost[]
   scheduleSlots    ScheduleSlot[]
   appSetting       AppSetting?
+  subscriptions    UserSubscription[]
+  payments         PaymentRecord[]
+  auditLogs        AdminAuditLog[] @relation("AuditActor")
 
   @@index([role])
   @@index([isActive])
+  @@index([archivedAt])
+  @@index([lastLoginAt])
+}
+
+model SubscriptionPlan {
+  id                  String   @id @default(cuid())
+  /// TRIAL | BASIC | PRO | PREMIUM | CUSTOM
+  code                String   @unique
+  name                String
+  maxTargetChannels   Int      @default(5)
+  dailyPublishLimit   Int      @default(10)
+  isActive            Boolean  @default(true)
+  description         String?
+  sortOrder           Int      @default(0)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  userSubscriptions UserSubscription[]
+  payments          PaymentRecord[]
+}
+
+model UserSubscription {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId        String
+  plan          SubscriptionPlan @relation(fields: [planId], references: [id], onDelete: Restrict)
+  startAt       DateTime
+  endAt         DateTime
+  paymentNote   String?  @db.Text
+  /// PENDING | PAID | FAILED | MANUAL | WAIVED
+  paymentStatus String   @default("PENDING")
+  autoRenew     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([userId])
+  @@index([planId])
+  @@index([endAt])
+}
+
+model PaymentRecord {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId     String?
+  plan       SubscriptionPlan? @relation(fields: [planId], references: [id], onDelete: SetNull)
+  amount     Decimal  @db.Decimal(12, 2)
+  currency   String   @default("TRY")
+  paidAt     DateTime
+  /// MANUAL | STRIPE | IYZICO | OTHER
+  method     String   @default("MANUAL")
+  /// PENDING | COMPLETED | FAILED | REFUNDED
+  status     String   @default("PENDING")
+  note       String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([userId])
+  @@index([paidAt])
+  @@index([status])
+}
+
+model AdminAuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String
+  actor       User     @relation("AuditActor", fields: [actorUserId], references: [id], onDelete: Cascade)
+  action      String
+  entityType  String
+  entityId    String?
+  metadata    Json?
+  ipHash      String?
+  createdAt   DateTime @default(now())
+
+  @@index([actorUserId])
+  @@index([createdAt])
+  @@index([entityType, entityId])
+}
+
+model SystemSettings {
+  id                 String   @id @default("singleton")
+  defaultAppName     String   @default("Facebook Otomatik Paylaşım Paneli")
+  supportEmail       String?
+  defaultTimezone    String   @default("Europe/Istanbul")
+  publishRetryMax    Int      @default(3)
+  logRetentionDays   Int      @default(90)
+  maintenanceMode    Boolean  @default(false)
+  /// Bilgi amaçlı: FACEBOOK_PUBLISH_MODE ile uyumlu not
+  facebookModeNote   String   @default("mock")
+  updatedAt          DateTime @updatedAt
 }
 
 model FacebookAccount {

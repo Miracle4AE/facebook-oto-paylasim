@@ -28,6 +28,7 @@ export async function changeOwnPassword(
     data: {
       passwordHash: nextHash,
       mustChangePassword: false,
+      passwordChangedAt: new Date(),
     },
   });
 

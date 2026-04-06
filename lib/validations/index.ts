@@ -9,12 +9,33 @@ export const loginSchema = z.object({
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
 });
 
-export const adminCreateUserSchema = z.object({
-  name: z.string().min(1, "Ad soyad gerekli").max(120),
-  email: z.string().email("Geçerli e-posta girin"),
-  temporaryPassword: z.string().min(8, "Geçici şifre en az 8 karakter olmalı"),
-  isActive: z.boolean(),
-});
+export const adminCreateUserSchema = z
+  .object({
+    name: z.string().min(1, "Ad soyad gerekli").max(120),
+    email: z.string().email("Geçerli e-posta girin"),
+    temporaryPassword: z.string().min(8, "Geçici şifre en az 8 karakter olmalı"),
+    isActive: z.boolean(),
+    role: z.enum(["ADMIN", "USER"]),
+    mustChangePassword: z.boolean(),
+    adminNote: z.string().max(4000).optional().nullable(),
+    planId: z.string().optional().nullable(),
+    subscriptionStartAt: z.string().optional().nullable(),
+    subscriptionEndAt: z.string().optional().nullable(),
+    paymentNote: z.string().max(4000).optional().nullable(),
+    paymentStatus: z.enum(["PENDING", "PAID", "FAILED", "MANUAL", "WAIVED"]).optional(),
+  })
+  .superRefine((data, ctx) => {
+    const hasPlan = Boolean(data.planId?.trim());
+    const start = data.subscriptionStartAt?.trim();
+    const end = data.subscriptionEndAt?.trim();
+    if (hasPlan && (!start || !end)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Plan seçildiğinde başlangıç ve bitiş tarihi zorunludur",
+        path: ["subscriptionStartAt"],
+      });
+    }
+  });
 
 export const adminUpdateUserSchema = z
   .object({
@@ -24,6 +45,7 @@ export const adminUpdateUserSchema = z
     isActive: z.boolean(),
     role: z.enum(["ADMIN", "USER"]),
     newTemporaryPassword: z.string(),
+    adminNote: z.string().max(4000).optional().nullable(),
   })
   .refine((d) => d.newTemporaryPassword === "" || d.newTemporaryPassword.length >= 8, {
     message: "Geçici şifre en az 8 karakter olmalı",

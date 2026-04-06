@@ -6,20 +6,27 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
-    /** /admin → yönetici giriş adresine */
-    if (path === "/admin") {
-      return NextResponse.redirect(new URL("/admin/login", req.url));
-    }
-
-    /** Kamuya açık yönetici girişi (token gerekmez) */
+    /** Kamuya açık yönetici girişi */
     if (path === "/admin/login") {
       if (token?.role === "ADMIN") {
-        return NextResponse.redirect(new URL("/admin/kullanicilar", req.url));
+        return NextResponse.redirect(new URL("/admin", req.url));
       }
       if (token) {
         return NextResponse.redirect(new URL("/dashboard", req.url));
       }
       return NextResponse.next();
+    }
+
+    /** Admin paneli — oturum yoksa yönetici girişine */
+    if (path.startsWith("/admin") && !token) {
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+
+    /** Admin rotaları — yalnızca ADMIN */
+    if (path === "/admin" || path.startsWith("/admin/")) {
+      if (token && token.role !== "ADMIN") {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
     }
 
     if (!token) {
@@ -35,17 +42,14 @@ export default withAuth(
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
-    if (path.startsWith("/admin") && token.role !== "ADMIN") {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-
     return NextResponse.next();
   },
   {
     callbacks: {
       authorized: ({ token, req }) => {
         const p = req.nextUrl.pathname;
-        if (p === "/admin" || p === "/admin/login") return true;
+        if (p === "/admin/login") return true;
+        if (p.startsWith("/admin")) return true;
         return Boolean(token);
       },
     },

@@ -35,6 +35,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -90,6 +91,14 @@ export function UserManagementView({ initialUsers, currentUserId }: Props) {
       email: "",
       temporaryPassword: "",
       isActive: true,
+      role: UserRole.USER,
+      mustChangePassword: true,
+      adminNote: null,
+      planId: null,
+      subscriptionStartAt: null,
+      subscriptionEndAt: null,
+      paymentNote: null,
+      paymentStatus: "PENDING",
     },
   });
 
@@ -102,6 +111,7 @@ export function UserManagementView({ initialUsers, currentUserId }: Props) {
       isActive: true,
       role: UserRole.USER,
       newTemporaryPassword: "",
+      adminNote: "",
     },
   });
 
@@ -114,6 +124,7 @@ export function UserManagementView({ initialUsers, currentUserId }: Props) {
       isActive: u.isActive,
       role: u.role === UserRole.ADMIN ? UserRole.ADMIN : UserRole.USER,
       newTemporaryPassword: "",
+      adminNote: u.adminNote ?? "",
     });
   }
 
@@ -125,7 +136,20 @@ export function UserManagementView({ initialUsers, currentUserId }: Props) {
     }
     toast.success("Kullanıcı oluşturuldu");
     setCreateOpen(false);
-    createForm.reset({ name: "", email: "", temporaryPassword: "", isActive: true });
+    createForm.reset({
+      name: "",
+      email: "",
+      temporaryPassword: "",
+      isActive: true,
+      role: UserRole.USER,
+      mustChangePassword: true,
+      adminNote: null,
+      planId: null,
+      subscriptionStartAt: null,
+      subscriptionEndAt: null,
+      paymentNote: null,
+      paymentStatus: "PENDING",
+    });
     router.refresh();
   }
 
@@ -407,6 +431,26 @@ export function UserManagementView({ initialUsers, currentUserId }: Props) {
                       <FormDescription>
                         Doldurursanız kullanıcı bir sonraki girişte yeni şifre belirlemek zorunda kalır.
                       </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={editForm.control}
+                  name="adminNote"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Yönetici notu</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="İç not"
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          onBlur={field.onBlur}
+                          name={field.name}
+                          ref={field.ref}
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

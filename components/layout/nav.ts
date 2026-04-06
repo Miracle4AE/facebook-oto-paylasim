@@ -21,7 +21,7 @@ export const mainNav = [
 
 /** Yalnızca ADMIN rolüne gösterilir */
 export const adminNavItem = {
-  href: "/admin/kullanicilar",
-  label: "Kullanıcılar",
+  href: "/admin",
+  label: "Yönetim paneli",
   icon: Users,
 } as const;

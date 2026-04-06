@@ -8,7 +8,7 @@ import { UserRole } from "@/types/domain";
 export default async function AdminLoginPage() {
   const session = await getServerSession(authOptions);
   if (session?.user?.role === UserRole.ADMIN) {
-    redirect("/admin/kullanicilar");
+    redirect("/admin");
   }
   if (session) {
     redirect("/dashboard");
@@ -35,7 +35,7 @@ export default async function AdminLoginPage() {
         </div>
         <div className="flex-1">
           <LoginForm
-            redirectAfterLogin="/admin/kullanicilar"
+            redirectAfterLogin="/admin"
             title="Yönetici oturumu"
             description="Yönetici e-posta ve şifreniz (aynı kimlik doğrulama sunucusu)."
             submitLabel="Yönetici olarak giriş yap"

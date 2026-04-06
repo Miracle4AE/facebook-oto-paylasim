@@ -6,6 +6,7 @@ import {
   PublishJobStatus,
   PublishLogStatus,
   ScheduleRecurrence,
+  SubscriptionPlanCode,
   TargetChannelType,
   UserRole,
 } from "../types/domain";
@@ -13,6 +14,8 @@ import { prisma } from "../lib/prisma";
 import { encryptSecret } from "../lib/crypto/token-vault";
 
 async function main() {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const db = prisma as any;
   const passwordHash = await bcrypt.hash("demo123456", 12);
 
   const user = await prisma.user.upsert({
@@ -23,7 +26,7 @@ async function main() {
       role: UserRole.ADMIN,
       isActive: true,
       mustChangePassword: false,
-    } as unknown as Prisma.UserUncheckedUpdateInput,
+    } as Prisma.UserUncheckedUpdateInput,
     create: {
       email: "demo@paylasim.app",
       passwordHash,
@@ -32,7 +35,7 @@ async function main() {
       role: UserRole.ADMIN,
       isActive: true,
       mustChangePassword: false,
-    } as unknown as Prisma.UserUncheckedCreateInput,
+    } as Prisma.UserUncheckedCreateInput,
   });
 
   await prisma.appSetting.upsert({
@@ -46,6 +49,107 @@ async function main() {
       notifyPublishResult: true,
     },
   });
+
+  await db.systemSettings.upsert({
+    where: { id: "singleton" },
+    update: {},
+    create: {
+      id: "singleton",
+      defaultAppName: "Facebook Otomatik Paylaşım Paneli",
+      supportEmail: "destek@ornek.com",
+      defaultTimezone: "Europe/Istanbul",
+      publishRetryMax: 3,
+      logRetentionDays: 90,
+      maintenanceMode: false,
+      facebookModeNote: "mock",
+    },
+  });
+
+  const planSeeds = [
+    {
+      code: SubscriptionPlanCode.TRIAL,
+      name: "Deneme",
+      maxTargetChannels: 2,
+      dailyPublishLimit: 5,
+      sortOrder: 0,
+      description: "Kısa süreli deneme",
+    },
+    {
+      code: SubscriptionPlanCode.BASIC,
+      name: "Temel",
+      maxTargetChannels: 5,
+      dailyPublishLimit: 15,
+      sortOrder: 1,
+      description: "Küçük işletmeler",
+    },
+    {
+      code: SubscriptionPlanCode.PRO,
+      name: "Profesyonel",
+      maxTargetChannels: 20,
+      dailyPublishLimit: 50,
+      sortOrder: 2,
+      description: "Yoğun kullanım",
+    },
+    {
+      code: SubscriptionPlanCode.PREMIUM,
+      name: "Premium",
+      maxTargetChannels: 100,
+      dailyPublishLimit: 200,
+      sortOrder: 3,
+      description: "Kurumsal",
+    },
+    {
+      code: SubscriptionPlanCode.CUSTOM,
+      name: "Özel",
+      maxTargetChannels: 999,
+      dailyPublishLimit: 999,
+      sortOrder: 4,
+      description: "Anlaşmaya göre",
+    },
+  ] as const;
+
+  for (const p of planSeeds) {
+    await db.subscriptionPlan.upsert({
+      where: { code: p.code },
+      update: {
+        name: p.name,
+        maxTargetChannels: p.maxTargetChannels,
+        dailyPublishLimit: p.dailyPublishLimit,
+        sortOrder: p.sortOrder,
+        description: p.description,
+        isActive: true,
+      },
+      create: {
+        code: p.code,
+        name: p.name,
+        maxTargetChannels: p.maxTargetChannels,
+        dailyPublishLimit: p.dailyPublishLimit,
+        sortOrder: p.sortOrder,
+        description: p.description,
+        isActive: true,
+      },
+    });
+  }
+
+  const proPlan = await db.subscriptionPlan.findUnique({
+    where: { code: SubscriptionPlanCode.PRO },
+  });
+  if (proPlan) {
+    await db.userSubscription.deleteMany({ where: { userId: user.id } });
+    const end = new Date();
+    end.setFullYear(end.getFullYear() + 1);
+    await db.userSubscription.create({
+      data: {
+        userId: user.id,
+        planId: proPlan.id,
+        startAt: new Date(),
+        endAt: end,
+        paymentStatus: "PAID",
+        paymentNote: "Seed verisi",
+        autoRenew: false,
+      },
+    });
+  }
 
   const fb = await prisma.facebookAccount.upsert({
     where: { id: "seed-fb-1" },

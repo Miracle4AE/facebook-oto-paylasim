@@ -1,11 +1,20 @@
 import bcrypt from "bcryptjs";
-import type { User } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export type CredentialsAuthFailure = "not_found" | "wrong_password" | "inactive";
 
+/** Prisma `User` ile uyumlu; `Pick<User, …>` bazı ortamlarda `unknown` üretebildiği için açık tip. */
+export type SessionAuthUser = {
+  id: string;
+  email: string;
+  name: string | null;
+  image: string | null;
+  role: string;
+  mustChangePassword: boolean;
+};
+
 export type CredentialsAuthResult =
-  | { ok: true; user: Pick<User, "id" | "email" | "name" | "image" | "role" | "mustChangePassword"> }
+  | { ok: true; user: SessionAuthUser }
   | { ok: false; reason: CredentialsAuthFailure };
 
 const BCRYPT_ROUNDS = 12;
@@ -26,6 +35,7 @@ export async function authenticateUser(email: string, password: string): Promise
       role: true,
       isActive: true,
       mustChangePassword: true,
+      archivedAt: true,
     },
   });
 
@@ -33,7 +43,7 @@ export async function authenticateUser(email: string, password: string): Promise
     return { ok: false, reason: "not_found" };
   }
 
-  if (!user.isActive) {
+  if (user.archivedAt !== null || !user.isActive) {
     return { ok: false, reason: "inactive" };
   }
 

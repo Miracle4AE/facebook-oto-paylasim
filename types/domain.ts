@@ -4,6 +4,30 @@ export const UserRole = {
 } as const;
 export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
+/** Abonelik plan kodları — veritabanı SubscriptionPlan.code ile uyumlu */
+export const SubscriptionPlanCode = {
+  TRIAL: "TRIAL",
+  BASIC: "BASIC",
+  PRO: "PRO",
+  PREMIUM: "PREMIUM",
+  CUSTOM: "CUSTOM",
+} as const;
+export type SubscriptionPlanCode = (typeof SubscriptionPlanCode)[keyof typeof SubscriptionPlanCode];
+
+export const PaymentRecordStatus = {
+  PENDING: "PENDING",
+  COMPLETED: "COMPLETED",
+  FAILED: "FAILED",
+  REFUNDED: "REFUNDED",
+} as const;
+
+export const ManualPaymentMethod = {
+  MANUAL: "MANUAL",
+  STRIPE: "STRIPE",
+  IYZICO: "IYZICO",
+  OTHER: "OTHER",
+} as const;
+
 export const TargetChannelType = {
   PAGE: "PAGE",
   GROUP: "GROUP",
