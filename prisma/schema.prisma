@@ -1,0 +1,204 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  email         String   @unique
+  passwordHash  String
+  name          String?
+  image         String?
+  timezone      String   @default("Europe/Istanbul")
+  emailVerified DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  facebookAccounts FacebookAccount[]
+  facebookOAuthStates FacebookOAuthState[]
+  targetChannels   TargetChannel[]
+  contentPosts     ContentPost[]
+  scheduleSlots    ScheduleSlot[]
+  appSetting       AppSetting?
+}
+
+model FacebookAccount {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label        String
+  // AES-256-GCM ile şifrelenmiş page access token
+  accessTokenEnc String?
+  // Eski kayıtlar: düz metin (yalnızca okuma; yeni kayıtlar accessTokenEnc kullanır)
+  accessToken String?
+  appId        String?
+  appSecretEnc String?
+  pageId       String?
+  externalId   String?
+  isActive     Boolean  @default(true)
+  notes        String?
+  tokenExpiresAt DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  targetChannels TargetChannel[]
+
+  @@index([userId])
+}
+
+model TargetChannel {
+  id                  String   @id @default(cuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  facebookAccountId   String?
+  facebookAccount     FacebookAccount? @relation(fields: [facebookAccountId], references: [id], onDelete: SetNull)
+  name                String
+  url                 String
+  channelType         String   @default("OTHER")
+  externalId          String?
+  pageId              String?
+  // İsteğe bağlı: bu hedefe özel sayfa token’ı (şifreli). Yoksa FacebookAccount token’ı kullanılır.
+  pageAccessTokenEnc  String?
+  isActive            Boolean  @default(true)
+  notes               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  publishJobs PublishJob[]
+  publishLogs PublishLog[]
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+// OAuth callback sonrası sayfa seçimi için geçici durum (şifreli payload)
+model FacebookOAuthState {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  payloadEnc String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model ContentPost {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String?
+  body        String
+  status      String   @default("DRAFT")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  mediaFiles    MediaFile[]
+  scheduleSlots ScheduleSlot[]
+  publishJobs   PublishJob[]
+  publishLogs   PublishLog[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model MediaFile {
+  id            String      @id @default(cuid())
+  contentPostId String
+  contentPost   ContentPost @relation(fields: [contentPostId], references: [id], onDelete: Cascade)
+  storageKey    String
+  publicUrl     String
+  mimeType      String
+  kind          String
+  sizeBytes     Int
+  createdAt     DateTime    @default(now())
+
+  @@index([contentPostId])
+}
+
+model ScheduleSlot {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentPostId    String
+  contentPost      ContentPost @relation(fields: [contentPostId], references: [id], onDelete: Cascade)
+  timezone         String   @default("Europe/Istanbul")
+  recurrence       String   @default("DAILY")
+  scheduledAt      DateTime?
+  timesOfDay       String
+  daysOfWeek       String?
+  targetChannelIds String
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  publishJobs PublishJob[]
+
+  @@index([userId])
+  @@index([contentPostId])
+  @@index([isActive])
+}
+
+model PublishJob {
+  id               String   @id @default(cuid())
+  contentPostId    String
+  contentPost      ContentPost @relation(fields: [contentPostId], references: [id], onDelete: Cascade)
+  targetChannelId  String
+  targetChannel    TargetChannel @relation(fields: [targetChannelId], references: [id], onDelete: Cascade)
+  scheduleSlotId   String?
+  scheduleSlot     ScheduleSlot? @relation(fields: [scheduleSlotId], references: [id], onDelete: SetNull)
+  status           String   @default("PENDING")
+  scheduledFor     DateTime
+  attempts         Int      @default(0)
+  maxAttempts      Int      @default(3)
+  lastError        String?
+  nextRetryAt      DateTime?
+  idempotencyKey   String   @unique
+  // Aynı tetikleyicide (manuel veya zaman dilimi) oluşturulan işleri gruplar; kısmi başarı özeti için kullanılır.
+  publishGroupId   String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  logs PublishLog[]
+
+  @@index([status, scheduledFor])
+  @@index([contentPostId])
+  @@index([targetChannelId])
+  @@index([publishGroupId])
+}
+
+model PublishLog {
+  id              String   @id @default(cuid())
+  publishJobId    String
+  publishJob      PublishJob @relation(fields: [publishJobId], references: [id], onDelete: Cascade)
+  contentPostId   String
+  contentPost     ContentPost @relation(fields: [contentPostId], references: [id], onDelete: Cascade)
+  targetChannelId String
+  targetChannel   TargetChannel @relation(fields: [targetChannelId], references: [id], onDelete: Cascade)
+  status          String
+  message         String?
+  errorDetail     String?
+  payloadJson     String?
+  createdAt       DateTime @default(now())
+
+  @@index([contentPostId])
+  @@index([targetChannelId])
+  @@index([createdAt])
+}
+
+model AppSetting {
+  id                  String   @id @default(cuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  defaultTimezone     String   @default("Europe/Istanbul")
+  notifyEmail         Boolean  @default(true)
+  notifyInApp         Boolean  @default(true)
+  notifyPublishResult Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
