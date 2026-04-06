@@ -16,7 +16,20 @@ import { toast } from "sonner";
 
 type FormValues = z.infer<typeof loginSchema>;
 
-export function LoginForm() {
+export type LoginFormProps = {
+  /** Giriş sonrası yönlendirme (ör. yönetici girişinde /admin/kullanicilar) */
+  redirectAfterLogin?: string;
+  title?: string;
+  description?: string;
+  submitLabel?: string;
+};
+
+export function LoginForm({
+  redirectAfterLogin = "/dashboard",
+  title = "Giriş yap",
+  description = "E-posta ve şifrenizle panele erişin.",
+  submitLabel = "Giriş yap",
+}: LoginFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const form = useForm<FormValues>({
@@ -47,15 +60,15 @@ export function LoginForm() {
       return;
     }
     toast.success("Hoş geldiniz");
-    router.push("/dashboard");
+    router.push(redirectAfterLogin);
     router.refresh();
   }
 
   return (
     <Card className="border-border/70 shadow-panel">
       <CardHeader>
-        <CardTitle>Giriş yap</CardTitle>
-        <CardDescription>E-posta ve şifrenizle panele erişin.</CardDescription>
+        <CardTitle>{title}</CardTitle>
+        <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -87,7 +100,7 @@ export function LoginForm() {
               )}
             />
             <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? "Giriş yapılıyor..." : "Giriş yap"}
+              {loading ? "Giriş yapılıyor..." : submitLabel}
             </Button>
           </form>
         </Form>

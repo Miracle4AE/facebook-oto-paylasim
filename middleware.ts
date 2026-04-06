@@ -6,6 +6,22 @@ export default withAuth(
     const token = req.nextauth.token;
     const path = req.nextUrl.pathname;
 
+    /** /admin → yönetici giriş adresine */
+    if (path === "/admin") {
+      return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+
+    /** Kamuya açık yönetici girişi (token gerekmez) */
+    if (path === "/admin/login") {
+      if (token?.role === "ADMIN") {
+        return NextResponse.redirect(new URL("/admin/kullanicilar", req.url));
+      }
+      if (token) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+      }
+      return NextResponse.next();
+    }
+
     if (!token) {
       return NextResponse.redirect(new URL("/login", req.url));
     }
@@ -27,7 +43,11 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => Boolean(token),
+      authorized: ({ token, req }) => {
+        const p = req.nextUrl.pathname;
+        if (p === "/admin" || p === "/admin/login") return true;
+        return Boolean(token);
+      },
     },
     pages: { signIn: "/login" },
   },
@@ -35,6 +55,7 @@ export default withAuth(
 
 export const config = {
   matcher: [
+    "/admin",
     "/dashboard/:path*",
     "/hedefler/:path*",
     "/icerikler/:path*",

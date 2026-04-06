@@ -34,11 +34,14 @@ export default async function LoginPage() {
         <div className="flex-1">
           <LoginForm />
           <p className="mt-6 text-center text-xs text-muted-foreground">
-            Devam ederek{" "}
+            Yönetici misiniz?{" "}
+            <Link href="/admin/login" className="text-primary underline underline-offset-4">
+              Yönetici girişi (/admin/login)
+            </Link>
+            <span className="mx-1 text-border">·</span>
             <Link href="#" className="underline underline-offset-4">
-              güvenlik koşullarını
-            </Link>{" "}
-            kabul etmiş olursunuz.
+              Güvenlik koşulları
+            </Link>
           </p>
         </div>
       </div>
