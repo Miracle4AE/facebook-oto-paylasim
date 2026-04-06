@@ -7,6 +7,7 @@ import {
   PublishLogStatus,
   ScheduleRecurrence,
   TargetChannelType,
+  UserRole,
 } from "../types/domain";
 import { prisma } from "../lib/prisma";
 import { encryptSecret } from "../lib/crypto/token-vault";
@@ -19,19 +20,19 @@ async function main() {
     update: {
       passwordHash,
       name: "Demo Yönetici",
-      role: "ADMIN",
+      role: UserRole.ADMIN,
       isActive: true,
       mustChangePassword: false,
-    },
+    } as unknown as Prisma.UserUncheckedUpdateInput,
     create: {
       email: "demo@paylasim.app",
       passwordHash,
       name: "Demo Yönetici",
       timezone: "Europe/Istanbul",
-      role: "ADMIN",
+      role: UserRole.ADMIN,
       isActive: true,
       mustChangePassword: false,
-    },
+    } as unknown as Prisma.UserUncheckedCreateInput,
   });
 
   await prisma.appSetting.upsert({
