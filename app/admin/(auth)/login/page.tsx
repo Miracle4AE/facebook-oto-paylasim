@@ -5,6 +5,9 @@ import { authOptions } from "@/lib/auth-options";
 import { LoginForm } from "@/components/login/login-form";
 import { UserRole } from "@/types/domain";
 
+/** getServerSession → headers(); statik ön-üretimde Dynamic server usage hatası vermemesi için */
+export const dynamic = "force-dynamic";
+
 export default async function AdminLoginPage() {
   let session = null;
   try {
