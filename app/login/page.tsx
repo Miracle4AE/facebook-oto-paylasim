@@ -20,8 +20,15 @@ export default async function LoginPage() {
             loglarla izleyin. Meta API kısıtları servis katmanında soyutlanmıştır.
           </p>
           <div className="rounded-xl border border-border/60 bg-card/50 p-4 text-xs text-muted-foreground shadow-soft">
-            Demo giriş: <span className="font-mono text-foreground">demo@paylasim.app</span> /{" "}
-            <span className="font-mono text-foreground">demo123456</span>
+            <p>
+              Demo giriş: <span className="font-mono text-foreground">demo@paylasim.app</span> /{" "}
+              <span className="font-mono text-foreground">demo123456</span>
+            </p>
+            <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground/90">
+              Yönetici hesabıyla giriş yaptıktan sonra sol menüde <strong className="text-foreground/90">Kullanıcılar</strong>{" "}
+              (veya <span className="font-mono text-foreground/80">/admin/kullanicilar</span>) üzerinden kullanıcı
+              oluşturabilirsiniz. Önce oturum açmanız gerekir — ayrı bir herkese açık admin adresi yoktur.
+            </p>
           </div>
         </div>
         <div className="flex-1">
