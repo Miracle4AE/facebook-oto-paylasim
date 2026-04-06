@@ -2,6 +2,8 @@
 
 Next.js 14 (App Router), TypeScript, Prisma, NextAuth ve servis katmanlı mimari ile hazırlanmış, koyu temalı premium bir yönetim paneli. Arayüz tamamen Türkçedir.
 
+**Kaynak kod:** [github.com/Miracle4AE/facebook-oto-paylasim](https://github.com/Miracle4AE/facebook-oto-paylasim)
+
 ## Özellikler
 
 - E-posta / şifre ile güvenli oturum (NextAuth, JWT)
@@ -15,7 +17,7 @@ Next.js 14 (App Router), TypeScript, Prisma, NextAuth ve servis katmanlı mimari
 
 ## Gereksinimler
 
-- Node.js 18+
+- Node.js 18+ (`package.json` içinde `engines`; `.nvmrc` ile Node 20 önerilir)
 - npm veya pnpm
 
 ## Kurulum
@@ -42,21 +44,36 @@ Geliştirme adresi: [http://localhost:3000](http://localhost:3000)
 | Değişken | Açıklama |
 |----------|----------|
 | `DATABASE_URL` | SQLite: `file:./dev.db` |
-| `NEXTAUTH_URL` | Örn. `http://localhost:3000` |
+| `NEXTAUTH_URL` | Örn. `http://localhost:3000` (üretimde tam site URL’si) |
 | `NEXTAUTH_SECRET` | `openssl rand -base64 32` ile üretin |
 | `CRON_SECRET` | Cron endpoint için güçlü gizli anahtar |
+| `NEXT_PUBLIC_APP_NAME` | İsteğe bağlı; başlıkta kullanılır |
+
+Facebook Graph / OAuth (gerçek paylaşım için):
+
+| Değişken | Açıklama |
+|----------|----------|
+| `FACEBOOK_PUBLISH_MODE` | `mock` (varsayılan) veya `graph` |
+| `FACEBOOK_APP_ID` / `FACEBOOK_APP_SECRET` | Meta uygulama kimlikleri |
+| `FACEBOOK_GRAPH_VERSION` | Örn. `v21.0` |
+| `TOKEN_ENCRYPTION_KEY` | İsteğe bağlı; token şifreleme (32 bayt base64). Yoksa `NEXTAUTH_SECRET` türetilir |
 
 İsteğe bağlı:
 
-- `FACEBOOK_PUBLISH_MODE=graph` — gerçek Graph çağrıları için (`services/facebook/facebook-graph.service.ts`)
-- `FACEBOOK_GRAPH_VERSION` — Varsayılan `v21.0`
+- `FACEBOOK_MOCK_SUCCESS_RATE` — Mock modda başarı oranı (0–1)
 - `MEDIA_STORAGE_DRIVER` — İleride `s3` vb.
+
+**Güvenlik:** `.env` asla repoya eklenmez; yalnızca `.env.example` kullanın.
 
 ## Veritabanı
 
 - Geliştirme: **SQLite** (`prisma/schema.prisma`)
 - SQLite ile Prisma şemasında enum yerine **string** alanlar kullanılmıştır; uygulama tipleri `types/domain.ts` içindedir.
 - PostgreSQL’e geçiş: `datasource` içinde `provider = "postgresql"` ve `DATABASE_URL` güncelleyin; ardından `npx prisma migrate dev` ile migration oluşturun. İsterseniz PostgreSQL tarafında bu alanları native enum’a çevirebilirsiniz.
+
+## Sorun giderme
+
+- **Windows’ta `prisma generate` / `npm run build` sırasında `EPERM: operation not permitted` (query_engine yeniden adlandırma):** Genelde `node_modules/.prisma` içindeki dosya kilitlenir (çalışan `next dev`, IDE, antivirüs). `next dev` ve diğer Node süreçlerini kapatıp tekrar deneyin; gerekirse `node_modules` ve `package-lock.json` ile temiz kurulum yapın.
 
 ## Vercel dağıtımı
 
@@ -84,6 +101,7 @@ Geliştirme adresi: [http://localhost:3000](http://localhost:3000)
 |-------|----------|
 | `npm run dev` | Geliştirme sunucusu |
 | `npm run build` | Üretim derlemesi |
+| `npm run typecheck` | `tsc --noEmit` (CI ile uyumlu) |
 | `npm run db:push` | Şemayı veritabanına uygula |
 | `npm run db:seed` | Örnek veri |
 | `npm run db:studio` | Prisma Studio |

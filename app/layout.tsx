@@ -6,6 +6,7 @@ import { AppProviders } from "@/components/providers/app-providers";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXTAUTH_URL ?? "http://localhost:3000"),
   title: {
     default: "Facebook Otomatik Paylaşım Paneli",
     template: "%s · Facebook Otomatik Paylaşım",
