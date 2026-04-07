@@ -4,7 +4,7 @@ import { tr } from "date-fns/locale";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
-import { getActivationMilestones } from "@/lib/activation-state";
+import { getActivationMilestones } from "@/services/activation/activation-milestones.service";
 import { getDashboardStats } from "@/lib/dashboard-stats";
 import { getHabitLoopSnapshot } from "@/lib/habit-loop-stats";
 import { buildGamificationSnapshot } from "@/lib/gamification";

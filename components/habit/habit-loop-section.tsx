@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Flame, LayoutGrid, Sparkles, TrendingUp } from "lucide-react";
-import type { HabitLoopSnapshot } from "@/lib/habit-loop-stats";
+import type { HabitLoopSnapshot } from "@/types/habit-loop";
 import { useActivationQuickStart } from "@/components/activation/activation-quick-actions-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

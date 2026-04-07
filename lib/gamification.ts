@@ -1,4 +1,4 @@
-import type { HabitLoopSnapshot } from "@/lib/habit-loop-stats";
+import type { HabitLoopSnapshot } from "@/types/habit-loop";
 
 /** Her anlamlı paylaşım işlemi için XP (basit, şeffaf) */
 export const XP_PER_SHARE_ACTION = 8;

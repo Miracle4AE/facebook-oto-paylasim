@@ -1,3 +1,5 @@
+import "server-only";
+
 import { formatInTimeZone } from "date-fns-tz";
 import type { SubscriptionPlan } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
@@ -12,26 +14,9 @@ import {
 import { VIRTUAL_FREE_LIMITS } from "@/lib/billing/limits";
 import { ContentGroupShareLogKind } from "@/types/group-share";
 import { SubscriptionPlanCode, TargetChannelType } from "@/types/domain";
+import type { BillingDashboardDTO } from "@/types/billing-dashboard";
 
-export type BillingDashboardDTO = {
-  planCode: string;
-  planName: string;
-  maxGroupTargets: number;
-  dailyShareFlowLimit: number | null;
-  groupCount: number;
-  showUpgradeHint: boolean;
-  subscriptionEndAt: string | null;
-  isTrialLike: boolean;
-  /** 0–100, sınırlı planda grup kullanımı */
-  groupPercent: number;
-  bulkFlowsToday: number;
-  showTrialExpiredBanner: boolean;
-  trialCountdownLine: string | null;
-  trialEndedLine: string | null;
-  primaryUpgradeLine: string | null;
-  softPressureLine: string | null;
-  showUsageProgress: boolean;
-};
+export type { BillingDashboardDTO };
 
 export type HabitSnapshotForBilling = {
   todayDistinctGroups: number;

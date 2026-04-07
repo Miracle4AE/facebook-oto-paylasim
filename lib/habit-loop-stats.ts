@@ -1,6 +1,9 @@
+import "server-only";
+
 import { endOfWeek, startOfWeek, subDays } from "date-fns";
 import { formatInTimeZone, toZonedTime } from "date-fns-tz";
 import { prisma } from "@/lib/prisma";
+import type { HabitLoopSnapshot } from "@/types/habit-loop";
 import { PublishLogStatus } from "@/types/domain";
 import { ContentGroupShareLogKind } from "@/types/group-share";
 
@@ -8,20 +11,6 @@ const MEANINGFUL_GROUP_EVENTS: string[] = [
   ContentGroupShareLogKind.MARKED_DONE,
   ContentGroupShareLogKind.BULK_FLOW_STARTED,
 ];
-
-export type HabitLoopSnapshot = {
-  timezone: string;
-  didShareToday: boolean;
-  streakDays: number;
-  todayDistinctGroups: number;
-  /** Bu hafta en az bir paylaşım dokunan farklı grup (hedef) sayısı */
-  weekDistinctGroups: number;
-  totalShareActions: number;
-  weekShareActions: number;
-  usualShareHourLocal: number | null;
-  showTimeWindowHint: boolean;
-  motivationLine: string;
-};
 
 function hourDistance(a: number, b: number): number {
   const d = Math.abs(a - b);

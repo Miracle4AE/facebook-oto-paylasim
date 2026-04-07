@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowUpRight, Sparkles, Timer } from "lucide-react";
-import type { BillingDashboardDTO } from "@/services/billing/entitlements.service";
+import type { BillingDashboardDTO } from "@/types/billing-dashboard";
 import { useBillingPaywall } from "@/components/billing/billing-paywall-context";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
