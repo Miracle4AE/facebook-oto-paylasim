@@ -44,6 +44,8 @@ export function getFacebookHealthUserMessage(status: FacebookHealthUiStatus): st
   switch (status) {
     case "connected":
       return "Bağlantı aktif; token geçerli görünüyor.";
+    case "identity_connected":
+      return "Facebook hesabınız doğrulandı. Sayfa paylaşımı için ileride sayfa izinleri eklenecek; şimdilik yalnızca hesap bağlantısı kayıtlı.";
     case "token_expired":
       return "Token süresi dolmuş. Entegrasyon’dan yeniden bağlanın veya yeni Page Access Token girin.";
     case "invalid_token":
@@ -64,6 +66,7 @@ export function getFacebookHealthUserMessage(status: FacebookHealthUiStatus): st
 
 export type FacebookHealthUiStatus =
   | "connected"
+  | "identity_connected"
   | "token_expired"
   | "invalid_token"
   | "permission_denied"

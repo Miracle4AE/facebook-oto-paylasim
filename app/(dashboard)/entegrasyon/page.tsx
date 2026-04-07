@@ -7,11 +7,15 @@ import { getFacebookAppCredentials } from "@/services/facebook/facebook-graph-en
 import { loadFacebookAccountsHealth } from "@/services/facebook/facebook-token-health.service";
 import { FacebookAccountsPanel } from "@/components/entegrasyon/facebook-accounts-panel";
 
+export const dynamic = "force-dynamic";
+
 type SearchParams = {
   fb_pending?: string;
   fb_error?: string;
   fb_desc?: string;
   fb_connected?: string;
+  /** OAuth: kullanıcı kimliği ile bağlandı (sayfa token’ı yok) */
+  fb_mode?: string;
 };
 
 export default async function IntegrationPage({ searchParams }: { searchParams: SearchParams }) {
@@ -71,7 +75,8 @@ export default async function IntegrationPage({ searchParams }: { searchParams: 
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Facebook entegrasyonu</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Meta Graph API ile sayfa paylaşımı. Token’lar sunucuda şifrelenir; üretimde{" "}
+          İlk adımda yalnızca hesap doğrulaması (güvenli temel izinler). Sayfa yönetimi ve paylaşım izinleri sonraki
+          aşamada eklenebilir. Token’lar sunucuda şifrelenir; üretimde{" "}
           <code className="rounded bg-muted px-1 text-xs">TOKEN_ENCRYPTION_KEY</code> kullanın.
         </p>
       </div>
@@ -82,6 +87,7 @@ export default async function IntegrationPage({ searchParams }: { searchParams: 
         fbError={searchParams.fb_error ?? null}
         fbDesc={searchParams.fb_desc ?? null}
         showConnected={searchParams.fb_connected === "1"}
+        connectedAsUserIdentity={searchParams.fb_mode === "user"}
         healthByAccountId={healthSerialized}
         accounts={accounts.map((a) => {
           const row = a as unknown as FacebookAccountRow;

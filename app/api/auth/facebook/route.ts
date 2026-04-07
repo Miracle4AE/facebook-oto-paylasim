@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prismaFacebookOAuth } from "@/lib/prisma";
 import { encryptSecret } from "@/lib/crypto/token-vault";
+import { buildFacebookOAuthScopeQueryParam } from "@/services/facebook/facebook-oauth-connect";
 import {
   FACEBOOK_GRAPH_VERSION,
   getFacebookAppCredentials,
@@ -37,7 +38,7 @@ export async function GET() {
   });
 
   const redirectUri = encodeURIComponent(getFacebookOAuthRedirectUri());
-  const scope = encodeURIComponent("pages_show_list,pages_manage_posts,pages_read_engagement");
+  const scope = encodeURIComponent(buildFacebookOAuthScopeQueryParam());
   const authUrl = `https://www.facebook.com/${FACEBOOK_GRAPH_VERSION}/dialog/oauth?client_id=${cred.appId}&redirect_uri=${redirectUri}&state=${state.id}&scope=${scope}&response_type=code`;
 
   return NextResponse.redirect(authUrl);

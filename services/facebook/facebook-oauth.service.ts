@@ -96,6 +96,41 @@ export async function exchangeForLongLivedUserToken(shortLivedUserToken: string)
   };
 }
 
+export type FacebookUserProfile = {
+  id: string;
+  name: string;
+};
+
+/**
+ * `public_profile` (+ isteğe bağlı `email`) ile verilen kullanıcı erişim anahtarı için `/me`.
+ */
+export async function fetchFacebookUserProfile(userAccessToken: string): Promise<
+  { ok: true; profile: FacebookUserProfile } | { ok: false; result: FacebookPublishResult }
+> {
+  const url = new URL(`https://graph.facebook.com/${FACEBOOK_GRAPH_VERSION}/me`);
+  url.searchParams.set("fields", "id,name");
+  url.searchParams.set("access_token", userAccessToken);
+
+  const res = await fetch(url.toString());
+  const data = (await res.json()) as { id?: string; name?: string; error?: unknown };
+  if (!res.ok || typeof data.id !== "string") {
+    return {
+      ok: false,
+      result: mapGraphHttpToPublishResult(res.status, data as Record<string, unknown>, {
+        endpoint: `/${FACEBOOK_GRAPH_VERSION}/me`,
+        method: "GET",
+      }),
+    };
+  }
+  return {
+    ok: true,
+    profile: {
+      id: data.id,
+      name: typeof data.name === "string" && data.name.trim() !== "" ? data.name : "Facebook kullanıcısı",
+    },
+  };
+}
+
 export async function fetchUserManagedPages(userAccessToken: string): Promise<
   { ok: true; pages: FacebookPageRow[] } | { ok: false; result: FacebookPublishResult }
 > {

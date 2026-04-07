@@ -4,6 +4,7 @@ import { getFacebookAppCredentials } from "./facebook-graph-env";
 import { getFacebookAccountPlainToken } from "./facebook-account-token";
 import { classifyGraphError, parseGraphErrorBody } from "./facebook-graph-errors";
 import { graphApiGet } from "./facebook-graph-http";
+import { isFacebookUserConnectionAccount } from "./facebook-oauth-connect";
 import {
   getFacebookHealthUserMessage,
   type FacebookHealthUiStatus,
@@ -182,6 +183,16 @@ export async function checkFacebookAccountHealth(account: FacebookAccountRow): P
       status: "invalid_token",
       message: getFacebookHealthUserMessage("invalid_token"),
       checkedAt,
+    };
+  }
+
+  if (isFacebookUserConnectionAccount(account)) {
+    return {
+      accountId: account.id,
+      status: "identity_connected",
+      message: getFacebookHealthUserMessage("identity_connected"),
+      checkedAt,
+      expiresAt: account.tokenExpiresAt,
     };
   }
 

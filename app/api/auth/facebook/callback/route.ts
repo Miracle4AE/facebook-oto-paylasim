@@ -4,10 +4,11 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth-options";
 import { prisma, prismaFacebookOAuth } from "@/lib/prisma";
 import { encryptSecret } from "@/lib/crypto/token-vault";
+import { FACEBOOK_USER_ACCOUNT_NOTE_PREFIX } from "@/services/facebook/facebook-oauth-connect";
 import {
   exchangeAuthorizationCode,
   exchangeForLongLivedUserToken,
-  fetchUserManagedPages,
+  fetchFacebookUserProfile,
 } from "@/services/facebook/facebook-oauth.service";
 import { appLogger } from "@/services/logging/app-logger";
 
@@ -23,9 +24,10 @@ export async function GET(request: Request) {
   const errDesc = url.searchParams.get("error_description");
 
   if (err) {
+    const friendly = mapFacebookOAuthCallbackError(err, errDesc);
     return NextResponse.redirect(
       new URL(
-        `/entegrasyon?fb_error=${encodeURIComponent(err)}&fb_desc=${encodeURIComponent(errDesc ?? "")}`,
+        `/entegrasyon?fb_error=${encodeURIComponent(err)}&fb_desc=${encodeURIComponent(friendly)}`,
         base,
       ),
     );
@@ -54,42 +56,59 @@ export async function GET(request: Request) {
 
   const long = await exchangeForLongLivedUserToken(short.accessToken);
   if (!long.ok) {
-    return NextResponse.redirect(new URL("/entegrasyon?fb_error=long_lived", base));
+    return NextResponse.redirect(
+      new URL(
+        "/entegrasyon?fb_error=long_lived&fb_desc=" +
+          encodeURIComponent("Uzun ömürlü oturum anahtarı alınamadı. Lütfen tekrar deneyin."),
+        base,
+      ),
+    );
   }
 
-  const pagesRes = await fetchUserManagedPages(long.accessToken);
-  if (!pagesRes.ok) {
-    return NextResponse.redirect(new URL("/entegrasyon?fb_error=pages_list", base));
+  /** Faz 1: yalnızca temel scope’lar — sayfa listesi yok; kullanıcı kimliği `/me` ile doğrulanır. */
+  const profileRes = await fetchFacebookUserProfile(long.accessToken);
+  if (!profileRes.ok) {
+    appLogger.warn("facebook.oauth.profile_failed", { userId: session.user.id });
+    return NextResponse.redirect(
+      new URL(
+        "/entegrasyon?fb_error=profile_fetch&fb_desc=" +
+          encodeURIComponent("Facebook profili okunamadı. Oturumu kapatıp tekrar deneyin."),
+        base,
+      ),
+    );
   }
 
-  if (pagesRes.pages.length === 0) {
-    await prismaFacebookOAuth.delete({ where: { id: stateId } });
-    return NextResponse.redirect(new URL("/entegrasyon?fb_error=no_pages", base));
-  }
+  const { profile } = profileRes;
+  const expiresAt =
+    typeof long.expiresInSec === "number" && long.expiresInSec > 0
+      ? new Date(Date.now() + long.expiresInSec * 1000)
+      : null;
 
-  const payload = { pages: pagesRes.pages };
-  const enc = encryptSecret(JSON.stringify(payload));
-
-  if (pagesRes.pages.length === 1) {
-    const p = pagesRes.pages[0]!;
-    await prisma.facebookAccount.create({
-      data: {
-        userId: session.user.id,
-        label: p.name,
-        accessTokenEnc: encryptSecret(p.access_token),
-        pageId: p.id,
-        externalId: p.id,
-        isActive: true,
-      } as Prisma.FacebookAccountUncheckedCreateInput,
-    });
-    await prismaFacebookOAuth.delete({ where: { id: stateId } });
-    appLogger.info("facebook.oauth.auto_connected", { userId: session.user.id, pageId: p.id });
-    return NextResponse.redirect(new URL("/entegrasyon?fb_connected=1", base));
-  }
-
-  await prismaFacebookOAuth.update({
-    where: { id: stateId },
-    data: { payloadEnc: enc },
+  await prisma.facebookAccount.create({
+    data: {
+      userId: session.user.id,
+      label: profile.name,
+      accessTokenEnc: encryptSecret(long.accessToken),
+      pageId: null,
+      externalId: profile.id,
+      isActive: true,
+      notes: `${FACEBOOK_USER_ACCOUNT_NOTE_PREFIX} Kullanıcı ID: ${profile.id}.`,
+      tokenExpiresAt: expiresAt,
+    } as Prisma.FacebookAccountUncheckedCreateInput,
   });
-  return NextResponse.redirect(new URL(`/entegrasyon?fb_pending=${stateId}`, base));
+  await prismaFacebookOAuth.delete({ where: { id: stateId } });
+  appLogger.info("facebook.oauth.user_connected", { userId: session.user.id, fbUserId: profile.id });
+
+  return NextResponse.redirect(new URL("/entegrasyon?fb_connected=1&fb_mode=user", base));
+}
+
+function mapFacebookOAuthCallbackError(err: string, errDesc: string | null): string {
+  const d = (errDesc ?? "").trim();
+  if (err === "access_denied") {
+    return "Facebook girişi iptal edildi veya izin verilmedi.";
+  }
+  if (d.toLowerCase().includes("invalid scopes") || d.toLowerCase().includes("scope")) {
+    return "İstenen izinler Meta tarafından kabul edilmedi. Uygulama ayarlarını ve izin listesini kontrol edin.";
+  }
+  return d !== "" ? d : "Facebook yetkilendirmesi tamamlanamadı.";
 }

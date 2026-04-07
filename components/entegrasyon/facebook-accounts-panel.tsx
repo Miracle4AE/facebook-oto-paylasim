@@ -61,6 +61,8 @@ function healthBadgeVariant(
   status: FacebookHealthUiStatus,
 ): "success" | "destructive" | "secondary" | "outline" | "warning" {
   switch (status) {
+    case "identity_connected":
+      return "secondary";
     case "connected":
       return "success";
     case "token_expired":
@@ -78,6 +80,8 @@ function healthBadgeVariant(
 
 function healthShortLabel(status: FacebookHealthUiStatus): string {
   switch (status) {
+    case "identity_connected":
+      return "Hesap doğrulandı";
     case "connected":
       return "Bağlantı sağlam";
     case "token_expired":
@@ -105,6 +109,7 @@ type Props = {
   fbError: string | null;
   fbDesc: string | null;
   showConnected: boolean;
+  connectedAsUserIdentity?: boolean;
   healthByAccountId: Record<string, AccountHealthSerialized>;
 };
 
@@ -115,6 +120,7 @@ export function FacebookAccountsPanel({
   fbError,
   fbDesc,
   showConnected,
+  connectedAsUserIdentity,
   healthByAccountId,
 }: Props) {
   const router = useRouter();
@@ -212,7 +218,12 @@ export function FacebookAccountsPanel({
 
   return (
     <div className="space-y-6">
-      <FacebookIntegrationToasts fbError={fbError} fbDesc={fbDesc} showConnected={showConnected} />
+      <FacebookIntegrationToasts
+        fbError={fbError}
+        fbDesc={fbDesc}
+        showConnected={showConnected}
+        connectedAsUserIdentity={connectedAsUserIdentity}
+      />
 
       {oauthPending ? (
         <FacebookOAuthPicker
@@ -259,7 +270,10 @@ export function FacebookAccountsPanel({
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold">Bağlı hesaplar</h2>
-          <p className="text-sm text-muted-foreground">Sayfa erişim anahtarları şifreli saklanır.</p>
+          <p className="text-sm text-muted-foreground">
+            OAuth ile ilk bağlantı kullanıcı oturumunu doğrular; sayfa token’ı ve gelişmiş izinler sonraki adımda.
+            Anahtarlar şifreli saklanır.
+          </p>
         </div>
         <div className="flex flex-wrap gap-2">
           {hasAppCredentials ? (
