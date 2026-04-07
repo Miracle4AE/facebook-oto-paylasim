@@ -30,15 +30,14 @@ export default async function AdminLoginPage() {
           <p className="text-sm font-medium text-primary">Yönetici alanı</p>
           <h1 className="text-4xl font-semibold tracking-tight lg:text-5xl">Yönetici girişi</h1>
           <p className="max-w-xl text-sm text-muted-foreground lg:text-base">
-            Kullanıcı oluşturma ve hesap yönetimi için yönetici hesabıyla giriş yapın. Bu sayfa panel müşterilerinden
-            ayrı bir adrestir: <span className="font-mono text-foreground/90">/admin/login</span>
+            Yönetici yetkisi gerektiren işlemler için kurumunuzun size ilettiği hesap bilgileriyle giriş yapın.
           </p>
           <p className="text-xs text-muted-foreground">
-            Müşteri / standart panel girişi için{" "}
+            Standart panel oturumu için{" "}
             <Link href="/login" className="text-primary underline underline-offset-4">
-              /login
-            </Link>{" "}
-            kullanın.
+              ana giriş sayfası
+            </Link>
+            {" "}kullanılabilir.
           </p>
         </div>
         <div className="flex-1">

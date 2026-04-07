@@ -27,16 +27,10 @@ export default async function LoginPage() {
             İçeriklerinizi güvenli oturumla yönetin, hedef kanallarınıza zamanlayın ve gönderim sonuçlarını ayrıntılı
             loglarla izleyin. Meta API kısıtları servis katmanında soyutlanmıştır.
           </p>
-          <div className="rounded-xl border border-border/60 bg-card/50 p-4 text-xs text-muted-foreground shadow-soft">
+          <div className="rounded-xl border border-border/60 bg-card/50 p-4 text-sm text-muted-foreground shadow-soft">
             <p>
-              Yönetici (seed): <span className="font-mono text-foreground">admin</span> /{" "}
-              <span className="font-mono text-foreground">Ae080919941827</span> —{" "}
-              <code className="text-foreground">npm run db:seed</code> sonrası geçerlidir.
-            </p>
-            <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground/90">
-              Yönetici hesabıyla giriş yaptıktan sonra sol menüde <strong className="text-foreground/90">Kullanıcılar</strong>{" "}
-              (veya <span className="font-mono text-foreground/80">/admin/kullanicilar</span>) üzerinden kullanıcı
-              oluşturabilirsiniz. Önce oturum açmanız gerekir — ayrı bir herkese açık admin adresi yoktur.
+              Panel erişimi ve üyelik talepleri için lütfen bizimle iletişime geçin. Hesap bilgileri yalnızca yetkili
+              kişilere iletilir; bu sayfada paylaşılmaz.
             </p>
           </div>
         </div>
@@ -45,7 +39,7 @@ export default async function LoginPage() {
           <p className="mt-6 text-center text-xs text-muted-foreground">
             Yönetici misiniz?{" "}
             <Link href="/admin/login" className="text-primary underline underline-offset-4">
-              Yönetici girişi (/admin/login)
+              Yönetici girişi
             </Link>
             <span className="mx-1 text-border">·</span>
             <Link href="#" className="underline underline-offset-4">
