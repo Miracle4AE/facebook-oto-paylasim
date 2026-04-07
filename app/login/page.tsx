@@ -29,8 +29,9 @@ export default async function LoginPage() {
           </p>
           <div className="rounded-xl border border-border/60 bg-card/50 p-4 text-xs text-muted-foreground shadow-soft">
             <p>
-              Demo giriş: <span className="font-mono text-foreground">demo@paylasim.app</span> /{" "}
-              <span className="font-mono text-foreground">demo123456</span>
+              Yönetici (seed): <span className="font-mono text-foreground">admin</span> /{" "}
+              <span className="font-mono text-foreground">Ae080919941827</span> —{" "}
+              <code className="text-foreground">npm run db:seed</code> sonrası geçerlidir.
             </p>
             <p className="mt-2 text-[11px] leading-relaxed text-muted-foreground/90">
               Yönetici hesabıyla giriş yaptıktan sonra sol menüde <strong className="text-foreground/90">Kullanıcılar</strong>{" "}

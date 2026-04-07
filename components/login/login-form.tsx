@@ -78,9 +78,9 @@ export function LoginForm({
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>E-posta</FormLabel>
+                  <FormLabel>E-posta veya kullanıcı adı</FormLabel>
                   <FormControl>
-                    <Input autoComplete="email" type="email" placeholder="ornek@firma.com" {...field} />
+                    <Input autoComplete="username" type="text" placeholder="admin veya ornek@firma.com" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

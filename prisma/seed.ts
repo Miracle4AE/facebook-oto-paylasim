@@ -16,27 +16,29 @@ import { encryptSecret } from "../lib/crypto/token-vault";
 async function main() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = prisma as any;
-  const passwordHash = await bcrypt.hash("demo123456", 12);
+  const passwordHash = await bcrypt.hash("Ae080919941827", 12);
 
   const user = await prisma.user.upsert({
-    where: { email: "demo@paylasim.app" },
+    where: { email: "admin" },
     update: {
       passwordHash,
-      name: "Demo Yönetici",
+      name: "Yönetici",
       role: UserRole.ADMIN,
       isActive: true,
       mustChangePassword: false,
     } as Prisma.UserUncheckedUpdateInput,
     create: {
-      email: "demo@paylasim.app",
+      email: "admin",
       passwordHash,
-      name: "Demo Yönetici",
+      name: "Yönetici",
       timezone: "Europe/Istanbul",
       role: UserRole.ADMIN,
       isActive: true,
       mustChangePassword: false,
     } as Prisma.UserUncheckedCreateInput,
   });
+
+  await prisma.user.deleteMany({ where: { email: "demo@paylasim.app" } });
 
   await prisma.appSetting.upsert({
     where: { userId: user.id },

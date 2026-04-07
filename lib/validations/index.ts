@@ -4,8 +4,19 @@ const channelTypeEnum = z.enum(["PAGE", "GROUP", "PROFILE", "OTHER"]);
 const contentStatusEnum = z.enum(["DRAFT", "SCHEDULED", "PUBLISHED", "FAILED"]);
 const scheduleRecurrenceEnum = z.enum(["ONCE", "DAILY", "WEEKLY"]);
 
+/** Yönetici girişi için `admin` kullanıcı adı veya normal e-posta */
 export const loginSchema = z.object({
-  email: z.string().email("Geçerli bir e-posta girin"),
+  email: z
+    .string()
+    .min(1, "E-posta veya kullanıcı adı gerekli")
+    .refine(
+      (v) => {
+        const t = v.trim();
+        if (t.toLowerCase() === "admin") return true;
+        return z.string().email().safeParse(t).success;
+      },
+      { message: "Geçerli e-posta veya yönetici kullanıcı adı: admin" },
+    ),
   password: z.string().min(6, "Şifre en az 6 karakter olmalı"),
 });
 

@@ -32,10 +32,10 @@ npm run dev
 
 Geliştirme adresi: [http://localhost:3000](http://localhost:3000)
 
-### Demo hesap
+### Yönetici hesabı (seed)
 
-- E-posta: `demo@paylasim.app`
-- Şifre: `demo123456`
+- Kullanıcı adı veya e-posta alanına: `admin`
+- Şifre: `Ae080919941827` (`prisma/seed.ts` ile aynı; güvenlik için üretimde değiştirin)
 
 ## Ortam değişkenleri
 
