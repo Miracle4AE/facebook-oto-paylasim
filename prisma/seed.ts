@@ -1,5 +1,4 @@
 import type { Prisma } from "@prisma/client";
-import bcrypt from "bcryptjs";
 import {
   ContentPostStatus,
   MediaKind,
@@ -8,35 +7,17 @@ import {
   ScheduleRecurrence,
   SubscriptionPlanCode,
   TargetChannelType,
-  UserRole,
 } from "../types/domain";
+import { getAdminBootstrapPassword } from "../lib/admin-default-account";
 import { prisma } from "../lib/prisma";
 import { encryptSecret } from "../lib/crypto/token-vault";
+import { upsertBootstrapAdmin } from "../services/admin/bootstrap-admin.service";
 
 async function main() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = prisma as any;
-  const passwordHash = await bcrypt.hash("Ae080919941827", 12);
 
-  const user = await prisma.user.upsert({
-    where: { email: "admin" },
-    update: {
-      passwordHash,
-      name: "Yönetici",
-      role: UserRole.ADMIN,
-      isActive: true,
-      mustChangePassword: false,
-    } as Prisma.UserUncheckedUpdateInput,
-    create: {
-      email: "admin",
-      passwordHash,
-      name: "Yönetici",
-      timezone: "Europe/Istanbul",
-      role: UserRole.ADMIN,
-      isActive: true,
-      mustChangePassword: false,
-    } as Prisma.UserUncheckedCreateInput,
-  });
+  const user = await upsertBootstrapAdmin(getAdminBootstrapPassword());
 
   await prisma.user.deleteMany({ where: { email: "demo@paylasim.app" } });
 

@@ -8,14 +8,16 @@ function getKey(): Buffer {
   const raw = process.env.TOKEN_ENCRYPTION_KEY?.trim();
   if (raw) {
     const buf = Buffer.from(raw, "base64");
-    if (buf.length !== 32) {
-      throw new Error("TOKEN_ENCRYPTION_KEY base64 decode sonrası tam 32 bayt olmalıdır.");
+    if (buf.length === 32) {
+      return buf;
     }
-    return buf;
+    console.warn(
+      "[token-vault] TOKEN_ENCRYPTION_KEY geçersiz (32 bayt değil); NEXTAUTH_SECRET türetilmiş anahtar kullanılıyor.",
+    );
   }
   const secret = process.env.NEXTAUTH_SECRET;
   if (!secret) {
-    throw new Error("TOKEN_ENCRYPTION_KEY veya NEXTAUTH_SECRET tanımlı olmalıdır.");
+    throw new Error("TOKEN_ENCRYPTION_KEY (geçerli 32 bayt base64) veya NEXTAUTH_SECRET tanımlı olmalıdır.");
   }
   return createHash("sha256").update(secret, "utf8").digest();
 }
