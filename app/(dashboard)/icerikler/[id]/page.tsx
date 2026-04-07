@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react";
 import { authOptions } from "@/lib/auth-options";
 import { isValidContentPostId } from "@/lib/content-id";
 import { getContentPostDetailForUser } from "@/services/content/content-detail.service";
+import { getActiveGroupTargetsForUser } from "@/services/targets/group-targets.service";
 import { ContentDetailView } from "@/components/content/content-detail-view";
 import { Button } from "@/components/ui/button";
 
@@ -19,7 +20,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!session?.user?.id || !isValidContentPostId(raw)) {
     return { title: "İçerik" };
   }
-  const detail = await getContentPostDetailForUser({ userId: session.user.id, postId: raw });
+  const detail = await getContentPostDetailForUser({
+    userId: session.user.id,
+    postId: raw,
+  });
   if (!detail) {
     return { title: "İçerik bulunamadı", robots: { index: false, follow: false } };
   }
@@ -43,10 +47,13 @@ export default async function ContentDetailPage({ params }: PageProps) {
     notFound();
   }
 
-  const detail = await getContentPostDetailForUser({
-    userId: session.user.id,
-    postId: contentId,
-  });
+  const [detail, groupTargets] = await Promise.all([
+    getContentPostDetailForUser({
+      userId: session.user.id,
+      postId: contentId,
+    }),
+    getActiveGroupTargetsForUser(session.user.id),
+  ]);
 
   if (!detail) {
     notFound();
@@ -66,7 +73,7 @@ export default async function ContentDetailPage({ params }: PageProps) {
         </p>
       </div>
 
-      <ContentDetailView detail={detail} />
+      <ContentDetailView detail={detail} groupTargets={groupTargets} />
     </div>
   );
 }

@@ -271,16 +271,29 @@ export function TargetsView({
                     </FormItem>
                   )}
                 />
-                {(channelType === TargetChannelType.GROUP || channelType === TargetChannelType.PROFILE) && (
+                {channelType === TargetChannelType.GROUP && (
+                  <div className="flex gap-3 rounded-lg border border-primary/25 bg-primary/5 p-4 text-sm">
+                    <Info className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden />
+                    <div className="space-y-1 text-muted-foreground">
+                      <p className="font-medium text-foreground">Grup hedefi — yarı otomatik paylaşım</p>
+                      <p>
+                        Otomatik Graph gönderimi gruplarda desteklenmez; bunun yerine{" "}
+                        <strong className="font-medium text-foreground">İçerik detay</strong> sayfasındaki &quot;Gruplarda
+                        paylaş&quot; bölümü ile grupları sırayla açıp metni panodan yapıştırabilirsiniz. Facebook
+                        kuralları gereği gönderiler manueldir.
+                      </p>
+                    </div>
+                  </div>
+                )}
+                {channelType === TargetChannelType.PROFILE && (
                   <div className="flex gap-3 rounded-lg border border-amber-500/30 bg-amber-500/5 p-4 text-sm">
                     <Info className="mt-0.5 h-5 w-5 shrink-0 text-amber-600 dark:text-amber-500" aria-hidden />
                     <div className="space-y-1 text-muted-foreground">
-                      <p className="font-medium text-foreground">Graph API ile bu hedef türü sınırlı</p>
+                      <p className="font-medium text-foreground">Profil hedefi — Graph API sınırlı</p>
                       <p>
-                        Grup ve kişisel profil yayınları Meta tarafından sıkı kısıtlanır; bu uygulama şu an yalnızca
-                        <strong className="font-medium text-foreground"> sayfa (PAGE)</strong> hedefleri için otomatik
-                        paylaşımı destekler. Grup/profil seçtiyseniz hedefi not olarak kullanabilir veya manuel paylaşım
-                        planlayabilirsiniz.
+                        Kişisel profil yayınları Meta tarafından sıkı kısıtlanır; otomatik paylaşım yalnızca{" "}
+                        <strong className="font-medium text-foreground">sayfa (PAGE)</strong> hedefleri için
+                        desteklenir.
                       </p>
                     </div>
                   </div>

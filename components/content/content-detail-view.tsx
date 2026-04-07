@@ -8,12 +8,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ContentPostDetail } from "@/services/content/content-detail.service";
+import type { GroupTargetSummary } from "@/types/group-target";
+import { ContentGroupShareSection } from "@/components/content/content-group-share-section";
 
 type Props = {
   detail: ContentPostDetail;
+  groupTargets: GroupTargetSummary[];
 };
 
-export function ContentDetailView({ detail }: Props) {
+export function ContentDetailView({ detail, groupTargets }: Props) {
   const hasTitle = Boolean(detail.title?.trim());
   const displayTitle = hasTitle ? detail.title!.trim() : "Başlıksız içerik";
   const created = formatDateTimeLong(detail.createdAt);
@@ -72,6 +75,8 @@ export function ContentDetailView({ detail }: Props) {
           </div>
         </CardContent>
       </Card>
+
+      <ContentGroupShareSection groupTargets={groupTargets} title={detail.title} body={detail.body} />
 
       <Card className="border-border/80 shadow-sm">
         <CardHeader>

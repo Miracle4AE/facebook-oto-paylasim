@@ -74,18 +74,35 @@ export const changePasswordSchema = z
     path: ["confirmPassword"],
   });
 
-export const targetChannelSchema = z.object({
-  name: z.string().min(1, "İsim gerekli"),
-  url: z.string().url("Geçerli bir URL girin"),
-  channelType: channelTypeEnum,
-  pageId: z.string().optional(),
-  externalId: z.string().optional(),
-  notes: z.string().optional(),
-  isActive: z.boolean(),
-  facebookAccountId: z.string().optional().nullable(),
-  /** Sayfa özel token; sunucuda şifrelenir */
-  pageAccessToken: z.string().optional(),
-});
+export const targetChannelSchema = z
+  .object({
+    name: z.string().min(1, "İsim gerekli"),
+    url: z.string().url("Geçerli bir URL girin"),
+    channelType: channelTypeEnum,
+    pageId: z.string().optional(),
+    externalId: z.string().optional(),
+    notes: z.string().optional(),
+    isActive: z.boolean(),
+    facebookAccountId: z.string().optional().nullable(),
+    /** Sayfa özel token; sunucuda şifrelenir */
+    pageAccessToken: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.channelType !== "GROUP") return;
+    try {
+      const host = new URL(data.url).hostname.toLowerCase();
+      const ok = host.includes("facebook.com") || host === "fb.com" || host.endsWith(".fb.com");
+      if (!ok) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Grup hedefi için Facebook bağlantısı girin (ör. facebook.com/groups/…)",
+          path: ["url"],
+        });
+      }
+    } catch {
+      /* z.string().url zaten yakalar */
+    }
+  });
 
 export const contentPostSchema = z.object({
   title: z.string().optional(),

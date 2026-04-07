@@ -30,6 +30,7 @@ export async function createTargetChannel(input: unknown) {
     } as Prisma.TargetChannelUncheckedCreateInput,
   });
   revalidatePath("/hedefler");
+  revalidatePath("/icerikler");
   return { ok: true as const };
 }
 
@@ -62,6 +63,7 @@ export async function updateTargetChannel(id: string, input: unknown) {
     },
   });
   revalidatePath("/hedefler");
+  revalidatePath("/icerikler");
   return { ok: true as const };
 }
 
@@ -72,5 +74,6 @@ export async function deleteTargetChannel(id: string) {
   if (!existing) return { ok: false as const, error: "Kayıt bulunamadı" };
   await prisma.targetChannel.delete({ where: { id } });
   revalidatePath("/hedefler");
+  revalidatePath("/icerikler");
   return { ok: true as const };
 }
