@@ -66,7 +66,11 @@ export default async function HistoryPage({ searchParams }: { searchParams: Sear
         </CardHeader>
         <CardContent>
           {logs.length === 0 ? (
-            <EmptyState icon={History} title="Kayıt yok" description="Henüz log bulunmuyor." />
+            <EmptyState
+              icon={History}
+              title="Henüz hareket yok"
+              description="İlk paylaşımınızdan sonra sonuçlar burada görünür. Ne işe yaradığını net takip edersiniz."
+            />
           ) : (
             <Table>
               <TableHeader>

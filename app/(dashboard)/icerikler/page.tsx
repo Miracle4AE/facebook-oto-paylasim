@@ -26,7 +26,10 @@ export default async function ContentsPage() {
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">İçerikler</h1>
-          <p className="mt-2 text-sm text-muted-foreground">Tüm paylaşım gönderileriniz ve medya ekleri.</p>
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Bir metin yazın; detayda aynı içeriği çok gruba dakikalar içinde taşıyın — zaman kazandırır, daha fazla kişiye
+            ulaşırsınız.
+          </p>
         </div>
         <Button asChild>
           <Link href="/icerikler/yeni">
@@ -44,12 +47,17 @@ export default async function ContentsPage() {
           {posts.length === 0 ? (
             <EmptyState
               icon={Share2}
-              title="Henüz içerik yok"
-              description="İlk gönderinizi oluşturarak zamanlamaya hazır hale getirin."
+              title="İlk paylaşımını yap ve farkı gör"
+              description="Yeni bir metin oluşturun; gruplarda tek akışla aynı içeriği çok kanala taşıyın. Önce hedef ekleyebilir veya doğrudan içerikle başlayabilirsiniz."
               action={
-                <Button asChild>
-                  <Link href="/icerikler/yeni">İçerik oluştur</Link>
-                </Button>
+                <div className="flex flex-col items-center gap-3 sm:flex-row">
+                  <Button asChild>
+                    <Link href="/icerikler/yeni">İçerik oluştur</Link>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <Link href="/hedefler">Önce grup ekle</Link>
+                  </Button>
+                </div>
               }
             />
           ) : (

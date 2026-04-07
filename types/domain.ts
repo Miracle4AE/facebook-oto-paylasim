@@ -6,6 +6,7 @@ export type UserRole = (typeof UserRole)[keyof typeof UserRole];
 
 /** Abonelik plan kodları — veritabanı SubscriptionPlan.code ile uyumlu */
 export const SubscriptionPlanCode = {
+  FREE: "FREE",
   TRIAL: "TRIAL",
   BASIC: "BASIC",
   PRO: "PRO",

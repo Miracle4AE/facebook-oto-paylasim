@@ -24,6 +24,8 @@ model User {
   passwordChangedAt DateTime?
   archivedAt    DateTime?
   adminNote     String?  @db.Text
+  /// Stripe müşteri id (Checkout / abonelik)
+  stripeCustomerId String? @unique
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
@@ -31,6 +33,8 @@ model User {
   facebookOAuthStates FacebookOAuthState[]
   targetChannels   TargetChannel[]
   contentPosts     ContentPost[]
+  contentGroupShareDrafts ContentGroupShareDraft[]
+  contentGroupShareLogs   ContentGroupShareLog[]
   scheduleSlots    ScheduleSlot[]
   appSetting       AppSetting?
   subscriptions    UserSubscription[]
@@ -45,11 +49,15 @@ model User {
 
 model SubscriptionPlan {
   id                  String   @id @default(cuid())
-  /// TRIAL | BASIC | PRO | PREMIUM | CUSTOM
+  /// FREE | TRIAL | BASIC | PRO | PREMIUM | CUSTOM
   code                String   @unique
   name                String
   maxTargetChannels   Int      @default(5)
   dailyPublishLimit   Int      @default(10)
+  /// Grup hedefi üst sınırı; null = sınırsız (PRO / Premium)
+  maxGroupTargets     Int?
+  /// Günlük toplu grup paylaşım akışı (BULK_FLOW) sayısı; null = sınırsız
+  dailyShareFlowLimit Int?
   isActive            Boolean  @default(true)
   description         String?
   sortOrder           Int      @default(0)
@@ -72,12 +80,22 @@ model UserSubscription {
   /// PENDING | PAID | FAILED | MANUAL | WAIVED
   paymentStatus String   @default("PENDING")
   autoRenew     Boolean  @default(false)
+  /// Stripe abonelik id (yenileme / iptal için)
+  stripeSubscriptionId String? @unique
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
   @@index([userId])
   @@index([planId])
   @@index([endAt])
+}
+
+/// Stripe webhook idempotency — aynı event iki kez işlenmesin
+model StripeWebhookEvent {
+  id          String   @id @default(cuid())
+  stripeEventId String @unique
+  type        String
+  createdAt   DateTime @default(now())
 }
 
 model PaymentRecord {
@@ -175,9 +193,46 @@ model TargetChannel {
 
   publishJobs PublishJob[]
   publishLogs PublishLog[]
+  contentGroupShareDrafts ContentGroupShareDraft[]
+  contentGroupShareLogs   ContentGroupShareLog[]
 
   @@index([userId])
   @@index([isActive])
+}
+
+/// İçerik başına grup hedefi özel paylaşım metni (boşsa varsayılan içerik metni kullanılır)
+model ContentGroupShareDraft {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentPostId   String
+  contentPost     ContentPost @relation(fields: [contentPostId], references: [id], onDelete: Cascade)
+  targetChannelId String
+  targetChannel   TargetChannel @relation(fields: [targetChannelId], references: [id], onDelete: Cascade)
+  customText      String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([contentPostId, targetChannelId])
+  @@index([userId])
+}
+
+/// Manuel grup paylaşım yardımcısı olayları (istatistik / takip)
+model ContentGroupShareLog {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentPostId   String
+  contentPost     ContentPost @relation(fields: [contentPostId], references: [id], onDelete: Cascade)
+  targetChannelId String
+  targetChannel   TargetChannel @relation(fields: [targetChannelId], references: [id], onDelete: Cascade)
+  /// OPENED | MARKED_DONE | BULK_FLOW_STARTED
+  eventKind       String   @default("OPENED")
+  createdAt       DateTime @default(now())
+
+  @@index([userId, targetChannelId])
+  @@index([contentPostId])
+  @@index([createdAt])
 }
 
 // OAuth callback sonrası sayfa seçimi için geçici durum (şifreli payload)
@@ -207,6 +262,8 @@ model ContentPost {
   scheduleSlots ScheduleSlot[]
   publishJobs   PublishJob[]
   publishLogs   PublishLog[]
+  contentGroupShareDrafts ContentGroupShareDraft[]
+  contentGroupShareLogs   ContentGroupShareLog[]
 
   @@index([userId])
   @@index([status])

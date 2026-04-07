@@ -305,7 +305,7 @@ export function FacebookAccountsPanel({
           </p>
           {accounts.length === 0 ? (
             <p className="text-sm text-muted-foreground">
-              Henüz hesap yok. OAuth veya manuel token ile ekleyin.
+              Henüz bağlı hesap yok. Ekleyin; hedeflerinizle eşleşince paylaşım daha sorunsuz olur.
             </p>
           ) : (
             <Table>

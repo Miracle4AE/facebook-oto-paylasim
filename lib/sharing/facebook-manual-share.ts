@@ -94,3 +94,53 @@ export async function openUrlsInNewTabsSequential(urls: readonly string[]): Prom
 export function isBulkOpenAllowed(lastAtMs: number, nowMs: number): boolean {
   return nowMs - lastAtMs >= FACEBOOK_MANUAL_GROUP_BULK_COOLDOWN_MS;
 }
+
+export type CopyThenOpenItem = { url: string; text: string };
+
+export type CopyThenOpenSequentialResult = OpenSequentialResult & {
+  copyFailures: number;
+};
+
+/**
+ * Her adımda metni panoya yazar, ardından URL’yi yeni sekmede açar; aralarında gecikme.
+ * Kullanıcı jesti (tek tıklama) içinde çağrılmalıdır.
+ */
+export async function copyTextAndOpenUrlsSequential(
+  items: readonly CopyThenOpenItem[],
+): Promise<CopyThenOpenSequentialResult> {
+  const capped = items.slice(0, FACEBOOK_MANUAL_GROUP_MAX_TABS);
+  let opened = 0;
+  let blockedOrFailed = 0;
+  let copyFailures = 0;
+
+  for (let i = 0; i < capped.length; i++) {
+    const { url, text } = capped[i];
+    try {
+      if (text.trim().length > 0) {
+        await navigator.clipboard.writeText(text);
+      }
+    } catch {
+      copyFailures += 1;
+    }
+
+    const w = window.open(url, "_blank", "noopener,noreferrer");
+    if (w) {
+      opened += 1;
+    } else {
+      blockedOrFailed += 1;
+    }
+
+    if (i < capped.length - 1) {
+      await new Promise<void>((resolve) => {
+        window.setTimeout(resolve, randomDelayMs());
+      });
+    }
+  }
+
+  return {
+    attempted: capped.length,
+    opened,
+    blockedOrFailed,
+    copyFailures,
+  };
+}

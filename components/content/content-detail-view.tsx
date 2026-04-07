@@ -9,14 +9,22 @@ import { Separator } from "@/components/ui/separator";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { ContentPostDetail } from "@/services/content/content-detail.service";
 import type { GroupTargetSummary } from "@/types/group-target";
+import type { GroupTargetShareStat } from "@/types/group-share";
 import { ContentGroupShareSection } from "@/components/content/content-group-share-section";
 
 type Props = {
   detail: ContentPostDetail;
   groupTargets: GroupTargetSummary[];
+  groupShareDraftByTargetId: Record<string, string>;
+  groupShareStatsByTargetId: Record<string, GroupTargetShareStat>;
 };
 
-export function ContentDetailView({ detail, groupTargets }: Props) {
+export function ContentDetailView({
+  detail,
+  groupTargets,
+  groupShareDraftByTargetId,
+  groupShareStatsByTargetId,
+}: Props) {
   const hasTitle = Boolean(detail.title?.trim());
   const displayTitle = hasTitle ? detail.title!.trim() : "Başlıksız içerik";
   const created = formatDateTimeLong(detail.createdAt);
@@ -76,7 +84,15 @@ export function ContentDetailView({ detail, groupTargets }: Props) {
         </CardContent>
       </Card>
 
-      <ContentGroupShareSection groupTargets={groupTargets} title={detail.title} body={detail.body} />
+      <ContentGroupShareSection
+        key={detail.id}
+        contentPostId={detail.id}
+        groupTargets={groupTargets}
+        initialDraftByTargetId={groupShareDraftByTargetId}
+        statsByTargetId={groupShareStatsByTargetId}
+        title={detail.title}
+        body={detail.body}
+      />
 
       <Card className="border-border/80 shadow-sm">
         <CardHeader>
@@ -93,7 +109,7 @@ export function ContentDetailView({ detail, groupTargets }: Props) {
         <CardContent className="px-0 sm:px-6">
           {detail.publishJobs.length === 0 ? (
             <p className="px-6 text-sm text-muted-foreground sm:px-0">
-              Henüz yayın görevi yok. &quot;Hemen paylaş&quot; ile kuyruk oluşturabilir veya zamanlama ile planlayabilirsiniz.
+              Henüz kuyruk yok. Üstteki &quot;Hızlı paylaşımı başlat&quot; ile gönderebilir veya zamanlama ile planlayabilirsiniz.
             </p>
           ) : (
             <Table>

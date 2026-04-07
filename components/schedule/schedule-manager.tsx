@@ -360,7 +360,9 @@ export function ScheduleManager({
         </CardHeader>
         <CardContent>
           {slots.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Henüz kural yok.</p>
+            <p className="text-sm text-muted-foreground">
+              Otomatik tekrar yok — bir kural ekleyin, içerik kendi kendine sıraya girsin. Zaman kazandırır.
+            </p>
           ) : (
             <Table>
               <TableHeader>

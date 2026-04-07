@@ -9,6 +9,7 @@ import { Filter, Info, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { targetChannelSchema } from "@/lib/validations";
 import { createTargetChannel, deleteTargetChannel, updateTargetChannel } from "@/actions/targets";
+import { useBillingPaywall } from "@/components/billing/billing-paywall-context";
 import { TargetChannelType } from "@/types/domain";
 import { EmptyState } from "@/components/common/empty-state";
 import { Button } from "@/components/ui/button";
@@ -70,6 +71,7 @@ export function TargetsView({
   initialTargets: Target[];
   facebookAccounts: FacebookAcc[];
 }) {
+  const paywall = useBillingPaywall();
   const router = useRouter();
   const [query, setQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
@@ -164,6 +166,9 @@ export function TargetsView({
       : await createTargetChannel(payload);
     if (!res.ok) {
       toast.error(res.error ?? "İşlem başarısız");
+      if ("code" in res && res.code === "PLAN_LIMIT") {
+        paywall?.openPaywall(res.error);
+      }
       return;
     }
     toast.success(editing ? "Hedef güncellendi" : "Hedef oluşturuldu");
@@ -190,8 +195,9 @@ export function TargetsView({
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">Hedef kanallar</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Sayfa, grup veya profil hedeflerinizi yönetin. Arama ve filtreler anında uygulanır.
+          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+            Paylaşımın nereye gideceğini bir kez tanımlayın; sonra tekrar tekrar seçmeyin. Grup hedefleriyle çok kanala
+            ulaşmak daha hızlı olur.
           </p>
         </div>
         <Dialog
@@ -470,8 +476,12 @@ export function TargetsView({
           {filtered.length === 0 ? (
             <EmptyState
               icon={Filter}
-              title="Kayıt bulunamadı"
-              description="Filtreleri gevşetin veya yeni bir hedef ekleyin."
+              title={initialTargets.length === 0 ? "Hedef yok — etki de yok" : "Sonuç yok"}
+              description={
+                initialTargets.length === 0
+                  ? "İlk hedefini ekle; içerik hazır olunca tek tıkla doğru yerlere yönlensin. İlk paylaşımını yap ve farkı gör."
+                  : "Filtreleri gevşetin veya yeni hedef ekleyin."
+              }
             />
           ) : (
             <Table>

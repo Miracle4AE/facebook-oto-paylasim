@@ -23,8 +23,8 @@ export function ContentDetailMediaGrid({ items, className }: Props) {
       <EmptyState
         className={cn("py-14", className)}
         icon={ImageIcon}
-        title="Bu içerikte medya yok"
-        description="Düzenle sayfasından fotoğraf veya video ekleyerek zenginleştirebilirsiniz."
+        title="Medya ekle, dikkat çeksin"
+        description="Görseller paylaşımı güçlendirir; düzenle sayfasından fotoğraf veya video ekleyebilirsiniz."
       />
     );
   }

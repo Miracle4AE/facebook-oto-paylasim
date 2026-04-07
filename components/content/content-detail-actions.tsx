@@ -99,7 +99,7 @@ export function ContentDetailActions({ contentId, displayTitle, status }: Props)
         onClick={() => void runPublishNow()}
       >
         <Rocket className="mr-2 h-4 w-4" />
-        {pendingAction === "publish" ? "Gönderiliyor..." : "Hemen paylaş"}
+        {pendingAction === "publish" ? "Gönderiliyor..." : "Hızlı paylaşımı başlat"}
       </Button>
       <AlertDialog
         open={deleteOpen}

@@ -6,12 +6,16 @@ import { ArrowLeft } from "lucide-react";
 import { authOptions } from "@/lib/auth-options";
 import { isValidContentPostId } from "@/lib/content-id";
 import { getContentPostDetailForUser } from "@/services/content/content-detail.service";
+import { getGroupShareDraftsMapForContent, getGroupShareStatsForTargets } from "@/services/content/group-share.service";
 import { getActiveGroupTargetsForUser } from "@/services/targets/group-targets.service";
 import { ContentDetailView } from "@/components/content/content-detail-view";
+import { ContentFlowOnboarding } from "@/components/onboarding/content-flow-onboarding";
+import { ActivationContentHint } from "@/components/activation/activation-content-hint";
 import { Button } from "@/components/ui/button";
 
 type PageProps = {
   params: { id: string };
+  searchParams?: Record<string, string | string[] | undefined>;
 };
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -36,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
-export default async function ContentDetailPage({ params }: PageProps) {
+export default async function ContentDetailPage({ params, searchParams }: PageProps) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.id) {
     redirect("/login");
@@ -59,8 +63,23 @@ export default async function ContentDetailPage({ params }: PageProps) {
     notFound();
   }
 
+  const [groupShareDraftByTargetId, groupShareStats] = await Promise.all([
+    getGroupShareDraftsMapForContent({ userId: session.user.id, contentPostId: contentId }),
+    getGroupShareStatsForTargets({
+      userId: session.user.id,
+      targetChannelIds: groupTargets.map((g) => g.id),
+    }),
+  ]);
+  const groupShareStatsByTargetId = Object.fromEntries(groupShareStats.map((s) => [s.targetChannelId, s]));
+
+  const activationParam = searchParams?.activation;
+  const activationQuickstart =
+    typeof activationParam === "string" ? activationParam === "quickstart" : activationParam?.[0] === "quickstart";
+
   return (
     <div className="space-y-8">
+      <ActivationContentHint show={activationQuickstart} />
+      <ContentFlowOnboarding />
       <div>
         <Button variant="ghost" className="-ml-2 w-fit" asChild>
           <Link href="/icerikler">
@@ -68,12 +87,18 @@ export default async function ContentDetailPage({ params }: PageProps) {
             İçeriklere dön
           </Link>
         </Button>
-        <p className="mt-2 text-sm text-muted-foreground">
-          İçeriğinizi görüntüleyin, düzenleyin veya paylaşım simülasyonu çalıştırın.
+        <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          Metninizi gruplara hızlı taşıyın; aşağıda &quot;Gruplarda paylaş&quot; ile aynı içeriği çok kanala dakikalar
+          içinde yayın.
         </p>
       </div>
 
-      <ContentDetailView detail={detail} groupTargets={groupTargets} />
+      <ContentDetailView
+        detail={detail}
+        groupTargets={groupTargets}
+        groupShareDraftByTargetId={groupShareDraftByTargetId}
+        groupShareStatsByTargetId={groupShareStatsByTargetId}
+      />
     </div>
   );
 }
