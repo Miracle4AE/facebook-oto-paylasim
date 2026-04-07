@@ -271,8 +271,8 @@ export function FacebookAccountsPanel({
         <div>
           <h2 className="text-xl font-semibold">Bağlı hesaplar</h2>
           <p className="text-sm text-muted-foreground">
-            OAuth ile ilk bağlantı kullanıcı oturumunu doğrular; sayfa token’ı ve gelişmiş izinler sonraki adımda.
-            Anahtarlar şifreli saklanır.
+            İlk bağlantı temel hesap doğrulaması yapar. Gelişmiş izinler sonraki aşamada alınabilir. Anahtarlar şifreli
+            saklanır.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">

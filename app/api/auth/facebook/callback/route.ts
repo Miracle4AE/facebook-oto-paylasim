@@ -102,13 +102,21 @@ export async function GET(request: Request) {
   return NextResponse.redirect(new URL("/entegrasyon?fb_connected=1&fb_mode=user", base));
 }
 
+/**
+ * Facebook’un `error` / `error_description` parametrelerini kullanıcıya ham metin olarak verme;
+ * yalnızca Türkçe, genel mesajlar döndür.
+ */
 function mapFacebookOAuthCallbackError(err: string, errDesc: string | null): string {
-  const d = (errDesc ?? "").trim();
   if (err === "access_denied") {
     return "Facebook girişi iptal edildi veya izin verilmedi.";
   }
-  if (d.toLowerCase().includes("invalid scopes") || d.toLowerCase().includes("scope")) {
+  const code = err.trim().toLowerCase();
+  if (code === "invalid_scope" || code === "invalid_scopes") {
+    return "İstenen izinler bu uygulama için onaylı görünmüyor. Uygulama ayarlarınızı kontrol edin veya yöneticinize başvurun.";
+  }
+  const d = (errDesc ?? "").trim().toLowerCase();
+  if (d.includes("invalid scopes") || d.includes("scope")) {
     return "İstenen izinler Meta tarafından kabul edilmedi. Uygulama ayarlarını ve izin listesini kontrol edin.";
   }
-  return d !== "" ? d : "Facebook yetkilendirmesi tamamlanamadı.";
+  return "Facebook yetkilendirmesi tamamlanamadı. Lütfen bir süre sonra tekrar deneyin.";
 }

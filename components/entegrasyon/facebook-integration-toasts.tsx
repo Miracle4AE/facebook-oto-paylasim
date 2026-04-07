@@ -6,13 +6,15 @@ import { toast } from "sonner";
 
 const FB_ERROR_LABELS: Record<string, string> = {
   config: "Facebook uygulama kimlik bilgileri (FACEBOOK_APP_ID / FACEBOOK_APP_SECRET) eksik.",
-  token_exchange: "Yetkilendirme kodu oturum anahtarına çevrilemedi. Uygulama yönlendirme URI’sini Meta’da kontrol edin.",
+  token_exchange: "Yetkilendirme kodu oturum anahtarına çevrilemedi. Uygulama yönlendirme adresini Meta’da kontrol edin.",
   long_lived: "Uzun ömürlü oturum anahtarı alınamadı. Bir süre sonra tekrar deneyin.",
   profile_fetch: "Facebook profil bilgisi okunamadı. Oturumu kapatıp yeniden bağlanın.",
-  pages_list: "Sayfa listesi alınamadı (bu adım şu an ilk bağlantıda kullanılmıyor).",
+  pages_list: "Sayfa listesi alınamadı (bu adım ilk bağlantıda kullanılmıyor).",
   no_pages: "Erişilebilir Facebook sayfası bulunamadı.",
   invalid_state: "Bağlantı oturumu geçersiz veya süresi doldu. Yeniden “Facebook bağla” ile deneyin.",
   missing_params: "Facebook’tan eksik yanıt geldi. Tekrar deneyin.",
+  invalid_scope: "İstenen izinler bu uygulama için onaylı görünmüyor. Uygulama ayarlarınızı kontrol edin.",
+  invalid_scopes: "İstenen izinler bu uygulama için onaylı görünmüyor. Uygulama ayarlarınızı kontrol edin.",
 };
 
 type Props = {
@@ -35,7 +37,7 @@ export function FacebookIntegrationToasts({
     if (showConnected) {
       if (connectedAsUserIdentity) {
         toast.success(
-          "Facebook hesabınız panele bağlandı. Sayfa paylaşımı için ileride ek izinler eklenebilir; şimdilik yalnızca hesap doğrulaması yapıldı.",
+          "İlk bağlantı temel hesap doğrulaması yaptı. Gelişmiş izinler (sayfa paylaşımı vb.) sonraki aşamada alınabilir.",
         );
       } else {
         toast.success("Facebook bağlantısı tamamlandı.");
@@ -44,9 +46,10 @@ export function FacebookIntegrationToasts({
       return;
     }
     if (fbError) {
-      const base = FB_ERROR_LABELS[fbError] ?? "Facebook bağlantısı tamamlanamadı.";
-      const raw = (fbDesc ?? "").trim();
-      const msg = raw !== "" && !raw.includes("error_code") ? `${base} ${raw}` : base;
+      const mapped = FB_ERROR_LABELS[fbError] ?? "Facebook bağlantısı tamamlanamadı.";
+      const detail = (fbDesc ?? "").trim();
+      // Callback yalnızca Türkçe fb_desc üretir; ham Meta metni gösterme
+      const msg = detail.length > 0 ? detail : mapped;
       toast.error(msg, { duration: 10_000 });
       router.replace("/entegrasyon");
     }

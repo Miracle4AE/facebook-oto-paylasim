@@ -1,10 +1,10 @@
 import type { FacebookAccountRow } from "@/lib/prisma-schema-types";
 
 /**
- * İlk OAuth adımı: Meta “Invalid Scopes” üretmeden hesabı panele bağlar.
- * Sayfa yönetimi izinleri ayrı bir dialog/akışta istenecek (Faz 2).
+ * İlk OAuth adımı: yalnızca `public_profile` — `email` ve sayfa izinleri Meta’da sıkça
+ * “Invalid Scopes” ürettiği için authorize URL’de istenmez (Faz 2’de ayrı onay akışı).
  */
-export const FACEBOOK_OAUTH_CONNECT_SCOPES = ["public_profile", "email"] as const;
+export const FACEBOOK_OAUTH_CONNECT_SCOPES = ["public_profile"] as const;
 
 /**
  * Faz 2 — sayfa listesi / paylaşım için (şu an authorize URL’de kullanılmıyor).

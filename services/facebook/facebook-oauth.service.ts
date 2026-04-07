@@ -102,7 +102,7 @@ export type FacebookUserProfile = {
 };
 
 /**
- * `public_profile` (+ isteğe bağlı `email`) ile verilen kullanıcı erişim anahtarı için `/me`.
+ * `public_profile` ile verilen kullanıcı erişim anahtarı için `/me` (id, name).
  */
 export async function fetchFacebookUserProfile(userAccessToken: string): Promise<
   { ok: true; profile: FacebookUserProfile } | { ok: false; result: FacebookPublishResult }

@@ -75,8 +75,8 @@ export default async function IntegrationPage({ searchParams }: { searchParams: 
       <div>
         <h1 className="text-3xl font-semibold tracking-tight">Facebook entegrasyonu</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          İlk adımda yalnızca hesap doğrulaması (güvenli temel izinler). Sayfa yönetimi ve paylaşım izinleri sonraki
-          aşamada eklenebilir. Token’lar sunucuda şifrelenir; üretimde{" "}
+          İlk bağlantı temel hesap doğrulaması yapar. Gelişmiş izinler sonraki aşamada alınabilir. Token’lar sunucuda
+          şifrelenir; üretimde{" "}
           <code className="rounded bg-muted px-1 text-xs">TOKEN_ENCRYPTION_KEY</code> kullanın.
         </p>
       </div>
